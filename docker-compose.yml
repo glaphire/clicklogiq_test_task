@@ -1,0 +1,63 @@
+version: "3"
+services:
+    nginx:
+        image: nginx:latest
+        ports:
+            - "8081:80"
+        volumes:
+            - ./app:/app
+            - ./docker/nginx/:/etc/nginx/conf.d/
+        depends_on:
+            - php-fpm
+        working_dir: /app
+        networks:
+            - internal
+    php-fpm:
+        user: ${HOST_USER}
+        working_dir: /app
+        build:
+            context: ./docker/php-fpm
+            dockerfile: Dockerfile
+        volumes:
+            - ./app:/app
+            - ./docker/php-fpm/log/:/var/log/
+            - /etc/group:/etc/group:ro
+            - /etc/passwd:/etc/passwd:ro
+        ports:
+            - '9000:9000'
+        networks:
+            - internal
+        environment:
+            XDEBUG_CONFIG: "remote_host=192.168.229.0/28 remote_enable=1"
+            PHP_IDE_CONFIG: "serverName=ClickLogiq"
+    mysql:
+        image: mysql:5.7
+        environment:
+            MYSQL_DATABASE: ${MYSQL_DATABASE}
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+        ports:
+            - "8991:3306"
+        volumes:
+            - ./docker/mysql:/var/lib/mysql
+        networks:
+            - internal
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        volumes:
+            - ./docker/phpmyadmin:/sessions
+        depends_on:
+            - mysql
+        ports:
+            - 8002:80
+        environment:
+            PMA_HOST: mysql
+            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+        networks:
+            - internal
+networks:
+    internal:
+        driver: bridge
+        ipam:
+            driver: default
+            config:
+                -   subnet: 192.168.229.0/28
