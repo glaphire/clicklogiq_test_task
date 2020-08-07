@@ -8,3 +8,7 @@
 /var/
 /vendor/
 ###< symfony/framework-bundle ###
+
+###>project-specific
+composer/auth.json
+###<project-specific
