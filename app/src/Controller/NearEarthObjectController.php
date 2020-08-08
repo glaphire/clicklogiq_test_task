@@ -8,9 +8,9 @@ use Symfony\Component\Routing\Annotation\Route;
 class NearEarthObjectController extends AbstractController
 {
     /**
-     * @Route("/near/earth/object", name="near_earth_object")
+     * @Route("/neo/hazardous", name="neo_hazardous", methods={"GET"})
      */
-    public function index()
+    public function hazardous()
     {
         return $this->json([
             'message' => 'Welcome to your new controller!',
