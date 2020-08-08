@@ -2,7 +2,11 @@
 
 namespace App\Console;
 
+use App\Entity\NearEarthObject;
+use App\Repository\NearEarthObjectRepository;
+use DateTime;
 use DateTimeImmutable;
+use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Client;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -17,11 +21,18 @@ class NasaApiNearEarthObjectParser extends Command
 
     private string $nasaApiKey;
 
-    public function __construct($name = null, Client $httpClient, string $nasaApiKey)
-    {
+    private $entityManager;
+
+    public function __construct(
+        $name = null,
+        Client $httpClient,
+        string $nasaApiKey,
+        EntityManagerInterface $entityManager
+    ) {
         parent::__construct($name);
         $this->httpClient = $httpClient;
         $this->nasaApiKey = $nasaApiKey;
+        $this->entityManager = $entityManager;
     }
 
     protected function configure()
@@ -50,8 +61,43 @@ class NasaApiNearEarthObjectParser extends Command
 
         if ($response->getStatusCode() !== Response::HTTP_OK) {
             //TODO: add logging
+
+            $errorMessage = sprintf(
+                'Failed to get response from NASA API: %s HTTP status code',
+                $response->getStatusCode()
+            );
+
+            $output->writeln("<error>$errorMessage</error>");
             return Command::FAILURE;
         }
+
+        $decodedContent = json_decode($response->getBody()->getContents(), true);
+
+        $nearEarthObjects = $decodedContent['near_earth_objects'];
+        /**
+         * @var NearEarthObjectRepository $neoRepo
+         */
+        $neoRepo = $this->entityManager->getRepository(NearEarthObject::class);
+
+        foreach ($nearEarthObjects as $date => $groupedByDate) {
+            foreach ($groupedByDate as $i => $singleNearEarthObject) {
+                if ($neoRepo->findOneReference($singleNearEarthObject['neo_reference_id'])) {
+                    continue;
+                }
+
+                $nearEarthObjectEntity = new NearEarthObject();
+                $nearEarthObjectEntity->setDate(new DateTime($date));
+                $nearEarthObjectEntity->setReference($singleNearEarthObject['neo_reference_id']);
+                $nearEarthObjectEntity->setName($singleNearEarthObject['name']);
+
+                $nearEarthObjectEntity
+                    ->setSpeed($singleNearEarthObject['close_approach_data'][0]['relative_velocity']['kilometers_per_hour']);
+                $nearEarthObjectEntity->setIsHazardous($singleNearEarthObject['is_potentially_hazardous_asteroid']);
+                $this->entityManager->persist($nearEarthObjectEntity);
+            }
+        }
+
+        $this->entityManager->flush();
 
         return Command::SUCCESS;
     }

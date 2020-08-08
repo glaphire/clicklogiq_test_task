@@ -19,6 +19,16 @@ class NearEarthObjectRepository extends ServiceEntityRepository
         parent::__construct($registry, NearEarthObject::class);
     }
 
+    public function findOneReference($value): ?NearEarthObject
+    {
+        return $this->createQueryBuilder('n')
+            ->andWhere('n.reference = :val')
+            ->setParameter('val', $value)
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+    }
+
     // /**
     //  * @return NearEarthObject[] Returns an array of NearEarthObject objects
     //  */
@@ -32,18 +42,6 @@ class NearEarthObjectRepository extends ServiceEntityRepository
             ->setMaxResults(10)
             ->getQuery()
             ->getResult()
-        ;
-    }
-    */
-
-    /*
-    public function findOneBySomeField($value): ?NearEarthObject
-    {
-        return $this->createQueryBuilder('n')
-            ->andWhere('n.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
         ;
     }
     */
