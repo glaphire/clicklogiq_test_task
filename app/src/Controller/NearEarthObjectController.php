@@ -2,19 +2,29 @@
 
 namespace App\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Entity\NearEarthObject;
+use Doctrine\ORM\EntityManagerInterface;
+use FOS\RestBundle\Controller\AbstractFOSRestController;
 use Symfony\Component\Routing\Annotation\Route;
 
-class NearEarthObjectController extends AbstractController
+class NearEarthObjectController extends AbstractFOSRestController
 {
+    private EntityManagerInterface $entityManager;
+
+    public function __construct(EntityManagerInterface $entityManager)
+    {
+        $this->entityManager = $entityManager;
+    }
+
     /**
      * @Route("/neo/hazardous", name="neo_hazardous", methods={"GET"})
      */
-    public function hazardous()
+    public function hazardousAction()
     {
-        return $this->json([
-            'message' => 'Welcome to your new controller!',
-            'path' => 'src/Controller/NearEarthObjectController.php',
-        ]);
+        $nearEarthObjectRepository = $this->entityManager->getRepository(NearEarthObject::class);
+        $hazardous = $nearEarthObjectRepository->findBy(['is_hazardous' => true]);
+        $view = $this->view($hazardous, 200)->setFormat('json');
+
+        return $this->handleView($view);
     }
 }
