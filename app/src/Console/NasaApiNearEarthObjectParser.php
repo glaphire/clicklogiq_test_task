@@ -4,7 +4,6 @@ namespace App\Console;
 
 use App\Entity\NearEarthObject;
 use App\Repository\NearEarthObjectRepository;
-use DateTime;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Client;
@@ -52,8 +51,8 @@ class NasaApiNearEarthObjectParser extends Command
         $response = $this->httpClient->get('https://api.nasa.gov/neo/rest/v1/feed?',
             [
                 'query' => [
-                    'start_date' => $startDate->format('Y-m-d'), //TODO: create default and console argument date
-                    'end_date' => $endDate->format('Y-m-d'), //TODO: create default and console argument date
+                    'start_date' => $startDate->format('Y-m-d'),
+                    'end_date' => $endDate->format('Y-m-d'),
                     'detailed' => 'false',
                     'api_key' => $this->nasaApiKey
                 ],
@@ -75,30 +74,38 @@ class NasaApiNearEarthObjectParser extends Command
 
         $nearEarthObjects = $decodedContent['near_earth_objects'];
         /**
-         * @var NearEarthObjectRepository $neoRepo
+         * @var NearEarthObjectRepository $NearEarthObjectRepository
          */
-        $neoRepo = $this->entityManager->getRepository(NearEarthObject::class);
+        $NearEarthObjectRepository = $this->entityManager->getRepository(NearEarthObject::class);
 
         foreach ($nearEarthObjects as $date => $groupedByDate) {
             foreach ($groupedByDate as $i => $singleNearEarthObject) {
-                if ($neoRepo->findOneReference($singleNearEarthObject['neo_reference_id'])) {
+                if ($NearEarthObjectRepository->findOneReference($singleNearEarthObject['neo_reference_id'])) {
                     continue;
                 }
 
-                $nearEarthObjectEntity = new NearEarthObject();
-                $nearEarthObjectEntity->setDate(new DateTime($date));
-                $nearEarthObjectEntity->setReference($singleNearEarthObject['neo_reference_id']);
-                $nearEarthObjectEntity->setName($singleNearEarthObject['name']);
-
-                $nearEarthObjectEntity
-                    ->setSpeed($singleNearEarthObject['close_approach_data'][0]['relative_velocity']['kilometers_per_hour']);
-                $nearEarthObjectEntity->setIsHazardous($singleNearEarthObject['is_potentially_hazardous_asteroid']);
-                $this->entityManager->persist($nearEarthObjectEntity);
+                $this->saveNearEarthObject($singleNearEarthObject, $date);
             }
         }
 
         $this->entityManager->flush();
 
+        $output->writeln('Finished parsing Near Earth Objects from NASA API');
+
         return Command::SUCCESS;
+    }
+
+    //TODO: refactor to use Serializer (deserializer)
+    private function saveNearEarthObject(array $nearEarthObjectRawArray, string $date)
+    {
+        $nearEarthObjectEntity = new NearEarthObject();
+        $nearEarthObjectEntity->setDate(new DateTimeImmutable($date));
+        $nearEarthObjectEntity->setReference($nearEarthObjectRawArray['neo_reference_id']);
+        $nearEarthObjectEntity->setName($nearEarthObjectRawArray['name']);
+
+        $nearEarthObjectEntity
+            ->setSpeed($nearEarthObjectRawArray['close_approach_data'][0]['relative_velocity']['kilometers_per_hour']);
+        $nearEarthObjectEntity->setIsHazardous($nearEarthObjectRawArray['is_potentially_hazardous_asteroid']);
+        $this->entityManager->persist($nearEarthObjectEntity);
     }
 }
