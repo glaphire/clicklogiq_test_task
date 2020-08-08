@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\NearEarthObjectRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass=NearEarthObjectRepository::class)
@@ -23,7 +24,8 @@ class NearEarthObject
     private $date;
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="integer", unique=true)
+     * @Assert\Unique
      */
     private $reference;
 
@@ -41,7 +43,7 @@ class NearEarthObject
     /**
      * @ORM\Column(type="boolean")
      */
-    private $is_hazardous;
+    private $is_hazardous = false;
 
     public function getId(): ?int
     {
