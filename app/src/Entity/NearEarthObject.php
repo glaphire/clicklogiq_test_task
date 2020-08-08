@@ -4,10 +4,11 @@ namespace App\Entity;
 
 use App\Repository\NearEarthObjectRepository;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * @ORM\Entity(repositoryClass=NearEarthObjectRepository::class)
+ * @UniqueEntity(fields={reference})
  */
 class NearEarthObject
 {
@@ -25,7 +26,6 @@ class NearEarthObject
 
     /**
      * @ORM\Column(type="integer", unique=true)
-     * @Assert\Unique
      */
     private $reference;
 
