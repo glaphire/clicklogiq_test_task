@@ -1,4 +1,7 @@
 {
+    "babdev/pagerfanta-bundle": {
+        "version": "v2.5.0"
+    },
     "composer/package-versions-deprecated": {
         "version": "1.10.99"
     },
@@ -116,6 +119,9 @@
     },
     "ocramius/proxy-manager": {
         "version": "2.8.0"
+    },
+    "pagerfanta/pagerfanta": {
+        "version": "v2.4.1"
     },
     "php": {
         "version": "7.4"
