@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\NearEarthObject;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -27,6 +28,14 @@ class NearEarthObjectRepository extends ServiceEntityRepository
             ->getQuery()
             ->getOneOrNullResult()
         ;
+    }
+
+    /**
+     * @return QueryBuilder
+     */
+    public function findAllQueryBuilder()
+    {
+        return $this->createQueryBuilder('n');
     }
 
     // /**
