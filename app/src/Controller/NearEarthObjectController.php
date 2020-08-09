@@ -9,6 +9,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\SerializerInterface;
 
 class NearEarthObjectController extends AbstractFOSRestController
 {
@@ -17,11 +18,16 @@ class NearEarthObjectController extends AbstractFOSRestController
      * @var PaginationFactory
      */
     private $paginationFactory;
+    /**
+     * @var SerializerInterface
+     */
+    private $serializer;
 
-    public function __construct(EntityManagerInterface $entityManager, PaginationFactory $paginationFactory)
+    public function __construct(EntityManagerInterface $entityManager, PaginationFactory $paginationFactory, SerializerInterface $serializer)
     {
         $this->entityManager = $entityManager;
         $this->paginationFactory = $paginationFactory;
+        $this->serializer = $serializer;
     }
 
     /**
@@ -35,34 +41,15 @@ class NearEarthObjectController extends AbstractFOSRestController
         $nearEarthObjectRepository = $this->entityManager
             ->getRepository(NearEarthObject::class);
 
-        $queryBuilder = $nearEarthObjectRepository->findAllQueryBuilder();//->andWhere('n.is_hazardous=1');
-
-        $aa = $queryBuilder->getQuery()->getResult();
+        //TODO: add getting is_hazardous=1
+        $queryBuilder = $nearEarthObjectRepository->findAllQueryBuilder();
 
         $paginatedCollection = $this
             ->paginationFactory
             ->createCollection($queryBuilder, $request, 'neo_hazardous');
 
-        //$hazardous = $nearEarthObjectRepository->findBy(['is_hazardous' => true]);
-        /*
-        $qb = $this->getDoctrine()
-            ->getRepository('AppBundle:Programmer')
-            ->findAllQueryBuilder();
-        $paginatedCollection = $this->get('pagination_factory')
-            ->createCollection($qb, $request, 'api_programmers_collection');
-        $response = $this->createApiResponse($paginatedCollection, 200);
-        return $response; */
         $view = $this->view($paginatedCollection, 200)->setFormat('json');
 
         return $this->handleView($view);
     }
-
-//    protected function createApiResponse($data, $statusCode = 200)
-//    {
-//        $json = $this->serialize($data);
-//
-//        return new Response($json, $statusCode, array(
-//            'Content-Type' => 'application/json'
-//        ));
-//    }
 }
