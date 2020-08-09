@@ -2,7 +2,9 @@
 
 namespace App\Pagination;
 
-class PaginatedCollection
+use JsonSerializable;
+
+class PaginatedCollection implements JsonSerializable
 {
     private $items;
 
@@ -10,7 +12,7 @@ class PaginatedCollection
 
     private $count;
 
-    private $_links = [];
+    private $links = [];
 
     public function __construct(array $items, $totalItems)
     {
@@ -21,6 +23,16 @@ class PaginatedCollection
 
     public function addLink($ref, $url)
     {
-        $this->_links[$ref] = $url;
+        $this->links[$ref] = $url;
+    }
+
+    public function jsonSerialize()
+    {
+        return [
+            'items' => $this->items,
+            'total' => $this->total,
+            'count' => $this->count,
+            'links' => $this->links,
+        ];
     }
 }
