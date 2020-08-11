@@ -4,24 +4,40 @@ namespace App\Serializer\Normalizer;
 
 use App\Pagination\PaginatedCollection;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
-use Symfony\Component\Serializer\Normalizer\PropertyNormalizer;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 
-class PaginatedCollectionNormalizer extends PropertyNormalizer implements NormalizerInterface
+class PaginatedCollectionNormalizer implements NormalizerInterface
 {
-    /**
-     * {@inheritdoc}
-     *
-     * @param array $context options that normalizers have access to
-     */
-    public function supportsNormalization($object, string $format = null, array $context = [])
-    {
-        $data = $this->normalizer->normalize($object, $format, $context);
+    private ObjectNormalizer $normalizer;
 
-        return $data;
+    public function __construct(ObjectNormalizer $normalizer)
+    {
+        $this->normalizer = $normalizer;
     }
 
     public function normalize($object, string $format = null, array $context = [])
     {
-        return $object instanceof PaginatedCollection;
+        $data['links'] = $object->getLinks();
+        $data['total'] = $object->getTotal();
+        $data['count'] = $object->getCount();
+        $data['items'] = [];
+
+        foreach ($object->getItems() as $item) {
+            $data['items'][] = [
+                'id' => $item->getId(),
+                'reference' => $item->getReference(),
+                'name' => $item->getName(),
+                'speed' => $item->getSpeed(),
+                'is_hazardous' => $item->getIsHazardous(),
+                'date' => $item->getDate()->format('Y-m-d'),
+            ];
+        }
+
+        return $data;
+    }
+
+    public function supportsNormalization($data, string $format = null)
+    {
+        return $data instanceof PaginatedCollection;
     }
 }

@@ -4,7 +4,7 @@ namespace App\Pagination;
 
 use JsonSerializable;
 
-class PaginatedCollection implements JsonSerializable
+class PaginatedCollection //implements JsonSerializable
 {
     private $items;
 
@@ -34,5 +34,25 @@ class PaginatedCollection implements JsonSerializable
             'count' => $this->count,
             'links' => $this->links,
         ];
+    }
+
+    public function getItems()
+    {
+        return $this->items;
+    }
+
+    public function getCount()
+    {
+        return $this->count;
+    }
+
+    public function getTotal()
+    {
+        return $this->total;
+    }
+
+    public function getLinks()
+    {
+        return $this->links;
     }
 }

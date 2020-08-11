@@ -11,7 +11,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
  * @ORM\Entity(repositoryClass=NearEarthObjectRepository::class)
  * @UniqueEntity(fields={"reference"})
  */
-class NearEarthObject implements JsonSerializable
+class NearEarthObject //implements JsonSerializable
 {
     /**
      * @ORM\Id()
