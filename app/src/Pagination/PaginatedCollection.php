@@ -2,10 +2,13 @@
 
 namespace App\Pagination;
 
-use JsonSerializable;
+use App\Entity\NearEarthObject;
 
-class PaginatedCollection //implements JsonSerializable
+class PaginatedCollection
 {
+    /**
+     * @param NearEarthObject[] $items
+     */
     private $items;
 
     private $total;
