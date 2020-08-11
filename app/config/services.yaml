@@ -33,3 +33,13 @@ services:
     # please note that last definitions always *replace* previous ones
     GuzzleHttp\Client:
         autowire: true
+
+    property_normalizer:
+        class: \Symfony\Component\Serializer\Normalizer\PropertyNormalizer
+        public: true
+        tags: {name: 'serializer.normalizer'}
+
+    paginated_collection_normalizer:
+        class: \App\Serializer\Normalizer\PaginatedCollectionNormalizer
+        public: true
+        tags: {name: 'serializer.normalizer'}

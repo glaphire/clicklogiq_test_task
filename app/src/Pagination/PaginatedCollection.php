@@ -14,7 +14,7 @@ class PaginatedCollection implements JsonSerializable
 
     private $links = [];
 
-    public function __construct(array $items, $totalItems)
+    public function __construct($items, $totalItems)
     {
         $this->items = $items;
         $this->total = $totalItems;

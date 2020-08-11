@@ -6,28 +6,23 @@ use App\Entity\NearEarthObject;
 use App\Pagination\PaginationFactory;
 use App\Repository\NearEarthObjectRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use FOS\RestBundle\Controller\AbstractFOSRestController;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\SerializerInterface;
 
-class NearEarthObjectController extends AbstractFOSRestController
+class NearEarthObjectController extends AbstractController
 {
     private EntityManagerInterface $entityManager;
     /**
      * @var PaginationFactory
      */
     private $paginationFactory;
-    /**
-     * @var SerializerInterface
-     */
-    private $serializer;
 
-    public function __construct(EntityManagerInterface $entityManager, PaginationFactory $paginationFactory, SerializerInterface $serializer)
+    public function __construct(EntityManagerInterface $entityManager, PaginationFactory $paginationFactory)
     {
         $this->entityManager = $entityManager;
         $this->paginationFactory = $paginationFactory;
-        $this->serializer = $serializer;
     }
 
     /**
@@ -38,7 +33,8 @@ class NearEarthObjectController extends AbstractFOSRestController
         /**
          * @var NearEarthObjectRepository $nearEarthObjectRepository
          */
-        $nearEarthObjectRepository = $this->entityManager
+        $nearEarthObjectRepository = $this
+            ->entityManager
             ->getRepository(NearEarthObject::class);
 
         //TODO: add getting is_hazardous=1
@@ -48,8 +44,6 @@ class NearEarthObjectController extends AbstractFOSRestController
             ->paginationFactory
             ->createCollection($queryBuilder, $request, 'neo_hazardous');
 
-        $view = $this->view($paginatedCollection, 200)->setFormat('json');
-
-        return $this->handleView($view);
+        return new JsonResponse($paginatedCollection, 200);
     }
 }
