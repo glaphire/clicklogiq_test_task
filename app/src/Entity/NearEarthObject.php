@@ -4,14 +4,13 @@ namespace App\Entity;
 
 use App\Repository\NearEarthObjectRepository;
 use Doctrine\ORM\Mapping as ORM;
-use JsonSerializable;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * @ORM\Entity(repositoryClass=NearEarthObjectRepository::class)
  * @UniqueEntity(fields={"reference"})
  */
-class NearEarthObject //implements JsonSerializable
+class NearEarthObject
 {
     /**
      * @ORM\Id()
@@ -109,17 +108,5 @@ class NearEarthObject //implements JsonSerializable
         $this->is_hazardous = $is_hazardous;
 
         return $this;
-    }
-
-    public function jsonSerialize()
-    {
-        return [
-            'id' => $this->getId(),
-            'name' => $this->getName(),
-            'reference' => $this->getReference(),
-            'speed' => $this->getSpeed(),
-            'is_hazardous' => $this->getIsHazardous(),
-            'date' => $this->getDate(),
-        ];
     }
 }
