@@ -7,6 +7,7 @@ use App\Pagination\PaginationFactory;
 use App\Repository\NearEarthObjectRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
 class NearEarthObjectController extends AbstractController
@@ -26,7 +27,7 @@ class NearEarthObjectController extends AbstractController
     /**
      * @Route("/neo/hazardous", name="neo_hazardous", methods={"GET"})
      */
-    public function hazardousAction()
+    public function hazardousAction(Request $request)
     {
         /**
          * @var NearEarthObjectRepository $nearEarthObjectRepository
@@ -35,13 +36,13 @@ class NearEarthObjectController extends AbstractController
             ->entityManager
             ->getRepository(NearEarthObject::class);
 
-        //TODO: add getting is_hazardous=1
-        $queryBuilder = $nearEarthObjectRepository->findAllQueryBuilder();
+        $queryBuilder = $nearEarthObjectRepository
+            ->isHazardousQueryBuilder(true);
 
         $paginatedCollection = $this
             ->paginationFactory
             ->createCollection($queryBuilder, $request, 'neo_hazardous');
 
-        return $this->json($paginatedCollection);
+        return $this->json($paginatedCollection, 200, [], ['datetime_format' => 'Y-m-d']);
     }
 }

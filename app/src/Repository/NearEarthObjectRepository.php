@@ -15,6 +15,8 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class NearEarthObjectRepository extends ServiceEntityRepository
 {
+    private const ALIAS = 'n';
+
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, NearEarthObject::class);
@@ -31,27 +33,19 @@ class NearEarthObjectRepository extends ServiceEntityRepository
     }
 
     /**
+     * @param bool $isHazardous
+     *
      * @return QueryBuilder
      */
-    public function findAllQueryBuilder()
+    public function isHazardousQueryBuilder($isHazardous = true, QueryBuilder $qb = null)
     {
-        return $this->createQueryBuilder('n');
+        return $this->getOrCreateQueryBuilder($qb)
+            ->where('n.is_hazardous = :is_hazardous')
+            ->setParameter('is_hazardous', $isHazardous);
     }
 
-    // /**
-    //  * @return NearEarthObject[] Returns an array of NearEarthObject objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    private function getOrCreateQueryBuilder(QueryBuilder $qb = null)
     {
-        return $this->createQueryBuilder('n')
-            ->andWhere('n.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('n.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
+        return $qb ?: $this->createQueryBuilder(self::ALIAS);
     }
-    */
 }
