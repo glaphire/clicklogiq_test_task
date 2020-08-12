@@ -11,28 +11,29 @@ use Symfony\Component\HttpKernel\KernelEvents;
 
 class ApiExceptionSubscriber implements EventSubscriberInterface
 {
+    //TODO: write proper exception handling
     public function onKernelException(ExceptionEvent $event)
     {
-        $e = $event->getThrowable();
-        $code = 500;
-
-        if ($e instanceof HttpException || $e instanceof PagerfantaException) {
-            $code = $e->getStatusCode();
-        }
-
-        $data = [
-            'error' => $e->getMessage(),
-            'code' => $code,
-        ];
-
-        $response = new JsonResponse(
-            $data,
-            $code,
-        );
-
-        $response->headers->set('Content-Type', 'application/json');
-
-        $event->setResponse($response);
+//        $e = $event->getThrowable();
+//        $code = 500;
+//
+//        if ($e instanceof HttpException || $e instanceof PagerfantaException) {
+//            $code = $e->getStatusCode();
+//        }
+//
+//        $data = [
+//            'error' => $e->getMessage(),
+//            'code' => $code,
+//        ];
+//
+//        $response = new JsonResponse(
+//            $data,
+//            $code,
+//        );
+//
+//        $response->headers->set('Content-Type', 'application/json');
+//
+//        $event->setResponse($response);
     }
 
     public static function getSubscribedEvents()

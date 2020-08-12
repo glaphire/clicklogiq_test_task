@@ -2,13 +2,8 @@
 
 namespace App\Pagination;
 
-use App\Entity\NearEarthObject;
-
 class PaginatedCollection
 {
-    /**
-     * @param NearEarthObject[] $items
-     */
     private $items;
 
     private $total;
@@ -27,16 +22,6 @@ class PaginatedCollection
     public function addLink($ref, $url)
     {
         $this->links[$ref] = $url;
-    }
-
-    public function jsonSerialize()
-    {
-        return [
-            'items' => $this->items,
-            'total' => $this->total,
-            'count' => $this->count,
-            'links' => $this->links,
-        ];
     }
 
     public function getItems()
