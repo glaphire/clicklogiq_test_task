@@ -28,10 +28,9 @@ class ApiExceptionSubscriber implements EventSubscriberInterface
     public function onKernelException(ExceptionEvent $event)
     {
         $exception = $event->getThrowable();
-        $request = $event->getRequest();
 
         if ($exception instanceof HttpExceptionInterface) {
-            $statusCode = $exception->getCode();
+            $statusCode = $exception->getStatusCode();
         } else {
             $statusCode = Response::HTTP_INTERNAL_SERVER_ERROR;
         }
