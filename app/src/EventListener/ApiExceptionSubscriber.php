@@ -2,10 +2,10 @@
 
 namespace App\EventListener;
 
+use App\Api\ApiResponse;
 use Exception;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
@@ -24,7 +24,6 @@ class ApiExceptionSubscriber implements EventSubscriberInterface
         $this->logger = $logger;
     }
 
-    //TODO: write proper exception handling
     public function onKernelException(ExceptionEvent $event)
     {
         $exception = $event->getThrowable();
@@ -42,24 +41,9 @@ class ApiExceptionSubscriber implements EventSubscriberInterface
             $message = $exception->getMessage();
         }
 
-        $data = [
-            'code' => $statusCode,
-            'message' => $message,
-        ];
+        $apiResponse = new ApiResponse($message, [], []);
 
-        $response = new JsonResponse(
-            $data,
-            $statusCode,
-        );
-
-        $response->headers->set('Content-Type', 'application/json');
-
-//        if (in_array('application/json', $request->getAcceptableContentTypes())) {
-//            //$response = $this->createApiResponse($e);
-//            $event->setResponse($response);
-//        }
-
-        $event->setResponse($response);
+        $event->setResponse($apiResponse);
     }
 
     public static function getSubscribedEvents()
