@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\NearEarthObjectRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass=NearEarthObjectRepository::class)
@@ -42,6 +43,10 @@ class NearEarthObject
 
     /**
      * @ORM\Column(type="boolean")
+     * @Assert\Type(
+     *     type="boolean",
+     *     message="The value {{ value }} is not a valid {{ type }}."
+     * )
      */
     private $is_hazardous = false;
 

@@ -9,6 +9,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class NearEarthObjectController extends AbstractController
 {
@@ -44,5 +45,24 @@ class NearEarthObjectController extends AbstractController
             ->createCollection($queryBuilder, $request, 'neo_hazardous');
 
         return $this->json($paginatedCollection, 200, [], ['datetime_format' => 'Y-m-d']);
+    }
+
+    /**
+     * @Route("/neo/fastest", name="neo_fastest", methods={"GET"})
+     */
+    public function getFastestNearEarthObject(Request $request, ValidatorInterface $validator)
+    {
+        $isHazardous = $request->get('hazardous', false);
+
+        /**
+         * @var NearEarthObjectRepository $nearEarthObjectRepository
+         */
+        $nearEarthObjectRepository = $this
+            ->entityManager
+            ->getRepository(NearEarthObject::class);
+
+        $fastestNearEarthObject = $nearEarthObjectRepository->getFastestNearEarthObject();
+
+        return $this->json($fastestNearEarthObject, 200, [], ['datetime_format' => 'Y-m-d']);
     }
 }

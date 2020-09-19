@@ -24,8 +24,8 @@ class NearEarthObjectRepository extends ServiceEntityRepository
 
     public function findOneReference($value): ?NearEarthObject
     {
-        return $this->createQueryBuilder('n')
-            ->andWhere('n.reference = :val')
+        return $this->createQueryBuilder(self::ALIAS)
+            ->andWhere(self::ALIAS.'.reference = :val')
             ->setParameter('val', $value)
             ->getQuery()
             ->getOneOrNullResult()
@@ -40,8 +40,23 @@ class NearEarthObjectRepository extends ServiceEntityRepository
     public function isHazardousQueryBuilder($isHazardous = true, QueryBuilder $qb = null)
     {
         return $this->getOrCreateQueryBuilder($qb)
-            ->where('n.is_hazardous = :is_hazardous')
+            ->where(self::ALIAS.'.is_hazardous = :is_hazardous')
             ->setParameter('is_hazardous', $isHazardous);
+    }
+
+    public function getFastestNearEarthObject(QueryBuilder $qb = null)
+    {
+        $query = $this->getOrCreateQueryBuilder($qb);
+
+        $maxSpeed = $query->select('MAX('.self::ALIAS.'.speed) as max_speed')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        $query->select(self::ALIAS)
+            ->where(self::ALIAS.'.speed='.$maxSpeed)
+            ->setMaxResults(1);
+
+        return $query->getQuery()->execute();
     }
 
     private function getOrCreateQueryBuilder(QueryBuilder $qb = null)
