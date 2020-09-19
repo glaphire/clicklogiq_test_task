@@ -61,8 +61,10 @@ class NearEarthObjectController extends AbstractController
             ->entityManager
             ->getRepository(NearEarthObject::class);
 
+        //TODO: refactor isHazardousQueryBuilder to Criteria and filter Fastest objects by is_hazardous
         $fastestNearEarthObject = $nearEarthObjectRepository->getFastestNearEarthObject();
 
+        //TODO: make unified response class
         return $this->json($fastestNearEarthObject, 200, [], ['datetime_format' => 'Y-m-d']);
     }
 }
