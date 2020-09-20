@@ -40,7 +40,7 @@ class NearEarthObjectRepository extends ServiceEntityRepository
     public function isHazardousQueryBuilder($isHazardous = true, QueryBuilder $qb = null)
     {
         return $this->getOrCreateQueryBuilder($qb)
-            ->where(self::ALIAS.'.is_hazardous = :is_hazardous')
+            ->andWhere(self::ALIAS.'.is_hazardous = :is_hazardous')
             ->setParameter('is_hazardous', $isHazardous);
     }
 
@@ -53,7 +53,7 @@ class NearEarthObjectRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
 
         $query->select(self::ALIAS)
-            ->where(self::ALIAS.'.speed='.$maxSpeed)
+            ->andWhere(self::ALIAS.'.speed='.$maxSpeed)
             ->setMaxResults(1);
 
         return $query->getQuery()->execute();
