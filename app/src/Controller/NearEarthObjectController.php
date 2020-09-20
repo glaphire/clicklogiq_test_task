@@ -87,6 +87,26 @@ class NearEarthObjectController extends AbstractController
     }
 
     /**
+     * @Route("/neo/best-month", name="neo_best_month", methods={"GET"})
+     */
+    public function getMonthWithMostNearEarthObjects(Request $request)
+    {
+        $isHazardous = filter_var($request->get('hazardous', false), FILTER_VALIDATE_BOOLEAN);
+
+        /**
+         * @var NearEarthObjectRepository $nearEarthObjectRepository
+         */
+        $nearEarthObjectRepository = $this
+            ->entityManager
+            ->getRepository(NearEarthObject::class);
+
+        $queryBuilder = $nearEarthObjectRepository
+            ->isHazardousQueryBuilder($isHazardous);
+
+        //TODO: write rest of endpoint logic
+    }
+
+    /**
      * @param $value
      * @param $constraints
      *

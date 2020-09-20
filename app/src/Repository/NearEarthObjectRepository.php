@@ -59,6 +59,14 @@ class NearEarthObjectRepository extends ServiceEntityRepository
         return $query->getQuery()->execute();
     }
 
+    public function getMonthWithMostNearEarthObjects(QueryBuilder $qb = null)
+    {
+        $query = $this->getOrCreateQueryBuilder($qb);
+
+        //TODO: rewrite raw SQL query to ORM query
+        //SELECT MONTH(date), COUNT(id) FROM near_earth_object GROUP BY MONTH(date) ORDER BY COUNT(id) DESC LIMIT 1
+    }
+
     private function getOrCreateQueryBuilder(QueryBuilder $qb = null)
     {
         return $qb ?: $this->createQueryBuilder(self::ALIAS);
