@@ -9,7 +9,11 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Validator\Constraints\Collection;
+use Symfony\Component\Validator\Constraints\Optional;
+use Symfony\Component\Validator\Constraints\Type;
+use Symfony\Component\Validator\ConstraintViolation;
+use Symfony\Component\Validator\Validation;
 
 class NearEarthObjectController extends AbstractController
 {
@@ -50,9 +54,21 @@ class NearEarthObjectController extends AbstractController
     /**
      * @Route("/neo/fastest", name="neo_fastest", methods={"GET"})
      */
-    public function getFastestNearEarthObject(Request $request, ValidatorInterface $validator)
+    public function getFastestNearEarthObject(Request $request)
     {
-        $isHazardous = $request->get('hazardous', false);
+        $constraints = new Collection([
+            'hazardous' => [new Optional(new Type(['type' => 'boolean']))],
+        ]);
+
+        //TODO: refactor to DTO and argument resolvers
+        $errors = $this->validate($request->get('hazardous', false), $constraints);
+
+        //TODO: refactor to normal errors response
+        if ($errors) {
+            return $this->json($errors, 400);
+        }
+
+        $isHazardous = filter_var($request->get('hazardous', false), FILTER_VALIDATE_BOOLEAN);
 
         /**
          * @var NearEarthObjectRepository $nearEarthObjectRepository
@@ -61,10 +77,36 @@ class NearEarthObjectController extends AbstractController
             ->entityManager
             ->getRepository(NearEarthObject::class);
 
-        //TODO: refactor isHazardousQueryBuilder to Criteria and filter Fastest objects by is_hazardous
-        $fastestNearEarthObject = $nearEarthObjectRepository->getFastestNearEarthObject();
+        $queryBuilder = $nearEarthObjectRepository
+            ->isHazardousQueryBuilder($isHazardous);
 
-        //TODO: make unified response class
+        $fastestNearEarthObject = $nearEarthObjectRepository
+            ->getFastestNearEarthObject($queryBuilder);
+
         return $this->json($fastestNearEarthObject, 200, [], ['datetime_format' => 'Y-m-d']);
+    }
+
+    /**
+     * @param $value
+     * @param $constraints
+     *
+     * @return array|void
+     */
+    protected function validate($value, $constraints)
+    {
+        $validator = Validation::createValidator();
+        $violations = $validator->validate($value, $constraints);
+        $messages = [];
+
+        if (0 === count($violations)) {
+            return;
+        }
+
+        foreach ($violations as $violation) {
+            /* @var ConstraintViolation $violation */
+            $messages[] = $violation->getMessage();
+        }
+
+        return $messages;
     }
 }
