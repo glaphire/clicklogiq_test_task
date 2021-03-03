@@ -61,6 +61,7 @@ class NearEarthObjectController extends AbstractController
         ]);
 
         //TODO: refactor to DTO and argument resolvers
+        //TODO: See "Symfony 5 Deep Dive! The HttpKernel Request-Response Flow" course
         $errors = $this->validate($request->get('hazardous', false), $constraints);
 
         //TODO: refactor to normal errors response
