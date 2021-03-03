@@ -3,70 +3,47 @@
 namespace App\Console;
 
 use App\Entity\NearEarthObject;
+use App\Module\NasaApiParser\Exception\NasaApiParserException;
+use App\Module\NasaApiParser\ParserService;
 use App\Repository\NearEarthObjectRepository;
 use DateTimeImmutable;
-use Doctrine\ORM\EntityManagerInterface;
-use GuzzleHttp\Client;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\HttpFoundation\Response;
 
 class NasaApiNearEarthObjectParser extends Command
 {
     protected static $defaultName = 'nasa-api:parse-near-earth-objects';
 
-    private Client $httpClient;
-
-    private string $nasaApiKey;
-
     private $entityManager;
+
+    private ParserService $parserService;
 
     public function __construct(
         $name = null,
-        Client $httpClient,
-        string $nasaApiKey,
-        EntityManagerInterface $entityManager
+        ParserService $parserService
     ) {
         parent::__construct($name);
-        $this->httpClient = $httpClient;
-        $this->nasaApiKey = $nasaApiKey;
-        $this->entityManager = $entityManager;
+        $this->parserService = $parserService;
     }
 
     protected function configure()
     {
+        $description = 'Retrieves list of NEO over the past three days'
+            .' from NASA API and saves to db.';
         $this
-            ->setDescription('Retrieves list of Near Earth Objects from NASA API and saves to db for last three days.');
-            //->setHelp('This command allows you to create a user...');
+            ->setDescription($description);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $output->writeln('Getting Near Earth Objects from NASA API');
 
-        $endDate = new DateTimeImmutable();
-        $startDate = $endDate->modify('-3 days');
+        try {
+            $response = $this->parserService->getNearEarthObjectsForThreeLastDays();
+        } catch (NasaApiParserException $e) {
+            $output->writeln("<error>" . $e->getMessage() . "</error>");
 
-        $response = $this->httpClient->get('https://api.nasa.gov/neo/rest/v1/feed?',
-            [
-                'query' => [
-                    'start_date' => $startDate->format('Y-m-d'),
-                    'end_date' => $endDate->format('Y-m-d'),
-                    'detailed' => 'false',
-                    'api_key' => $this->nasaApiKey
-                ],
-            ]);
-
-        if ($response->getStatusCode() !== Response::HTTP_OK) {
-            //TODO: add logging
-
-            $errorMessage = sprintf(
-                'Failed to get response from NASA API: %s HTTP status code',
-                $response->getStatusCode()
-            );
-
-            $output->writeln("<error>$errorMessage</error>");
             return Command::FAILURE;
         }
 
@@ -76,19 +53,19 @@ class NasaApiNearEarthObjectParser extends Command
         /**
          * @var NearEarthObjectRepository $NearEarthObjectRepository
          */
-        $NearEarthObjectRepository = $this->entityManager->getRepository(NearEarthObject::class);
-
-        foreach ($nearEarthObjects as $date => $groupedByDate) {
-            foreach ($groupedByDate as $i => $singleNearEarthObject) {
-                if ($NearEarthObjectRepository->findOneReference($singleNearEarthObject['neo_reference_id'])) {
-                    continue;
-                }
-
-                $this->saveNearEarthObject($singleNearEarthObject, $date);
-            }
-        }
-
-        $this->entityManager->flush();
+//        $NearEarthObjectRepository = $this->entityManager->getRepository(NearEarthObject::class);
+//
+//        foreach ($nearEarthObjects as $date => $groupedByDate) {
+//            foreach ($groupedByDate as $i => $singleNearEarthObject) {
+//                if ($NearEarthObjectRepository->findOneReference($singleNearEarthObject['neo_reference_id'])) {
+//                    continue;
+//                }
+//
+//                $this->saveNearEarthObject($singleNearEarthObject, $date);
+//            }
+//        }
+//
+//        $this->entityManager->flush();
 
         $output->writeln('Finished parsing Near Earth Objects from NASA API');
 
