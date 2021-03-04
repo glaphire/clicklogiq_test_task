@@ -5,7 +5,6 @@ namespace App\Module\NasaApiParser;
 use App\Entity\NearEarthObject;
 use App\Module\NasaApiParser\Exception\NasaApiParserException;
 use App\Repository\NearEarthObjectRepository;
-use DateTime;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Client;
@@ -14,63 +13,44 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ParserService
 {
+    private const NASA_API_BASE_URL = 'https://api.nasa.gov';
+
+    private const CACHE_KEY_RESPONSE_CONTENT = 'nasa_api_response_content';
+
     private Client $httpClient;
 
     private string $nasaApiKey;
 
     private EntityManagerInterface $entityManager;
 
-    private const NASA_API_BASE_URL = 'https://api.nasa.gov';
-
     private AdapterInterface $cache;
 
     public function __construct(Client $httpClient,
                                 EntityManagerInterface $entityManager,
-                                string $nasaApiKey,
-                                AdapterInterface $cache
+                                AdapterInterface $cache,
+                                string $nasaApiKey
     ) {
         $this->httpClient = $httpClient;
         $this->entityManager = $entityManager;
-        $this->nasaApiKey = $nasaApiKey;
         $this->cache = $cache;
+        $this->nasaApiKey = $nasaApiKey;
     }
 
     public function getNearEarthObjectsForThreeLastDays()
     {
-        $endDate = new DateTimeImmutable();
-        //TODO: refactor to any days amount
-        $startDate = $endDate->modify('-3 days');
+        $responseContent = $this->cache->getItem(self::CACHE_KEY_RESPONSE_CONTENT);
 
-        $response = $this->httpClient->get(self::NASA_API_BASE_URL . '/neo/rest/v1/feed',
-            [
-                'query' => [
-                    'start_date' => $startDate->format('Y-m-d'),
-                    'end_date' => $endDate->format('Y-m-d'),
-                    'detailed' => 'false',
-                    'api_key' => $this->nasaApiKey
-                ],
-            ]);
+        if (!$responseContent->isHit()) {
 
-        if ($response->getStatusCode() !== Response::HTTP_OK) {
-            throw new NasaApiParserException(sprintf(
-                'Failed to get response from NASA API: %s HTTP status code',
-                $response->getStatusCode())
-            );
+            $responseContent->set($this->getNearEarthObjectsFromNasa());
+            $responseContent->expiresAt(new DateTimeImmutable('tomorrow'));
+
+            $this->cache->save($responseContent);
         }
 
-        $responseContent = $response->getBody()->getContents();
+        $this->parseResponse($responseContent->get());
 
-        $responseContentCached = $this->cache->getItem('nasa_api_response_' . md5($responseContent));
-
-        if (!$responseContentCached->isHit()) {
-            $responseContentCached->set($responseContent);
-            $responseContentCached->expiresAt(new DateTime('tomorrow'));
-            $this->cache->save($responseContentCached);
-        }
-
-        $this->parseResponse($responseContentCached->get());
-
-        return $response;
+        return $responseContent;
     }
 
     private function parseResponse($response)
@@ -111,4 +91,28 @@ class ParserService
         $this->entityManager->persist($nearEarthObjectEntity);
     }
 
+    private function getNearEarthObjectsFromNasa(): string
+    {
+        $endDate = new DateTimeImmutable();
+        $startDate = $endDate->modify('-3 days');
+
+        $response = $this->httpClient->get(self::NASA_API_BASE_URL . '/neo/rest/v1/feed',
+            [
+                'query' => [
+                    'start_date' => $startDate->format('Y-m-d'),
+                    'end_date' => $endDate->format('Y-m-d'),
+                    'detailed' => 'false',
+                    'api_key' => $this->nasaApiKey
+                ],
+            ]);
+
+        if ($response->getStatusCode() !== Response::HTTP_OK) {
+            throw new NasaApiParserException(sprintf(
+                    'Failed to get response from NASA API: %s HTTP status code',
+                    $response->getStatusCode())
+            );
+        }
+
+        return $response->getBody()->getContents();
+    }
 }
