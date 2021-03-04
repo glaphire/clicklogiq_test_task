@@ -5,9 +5,11 @@ namespace App\Module\NasaApiParser;
 use App\Entity\NearEarthObject;
 use App\Module\NasaApiParser\Exception\NasaApiParserException;
 use App\Repository\NearEarthObjectRepository;
+use DateTime;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Client;
+use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\HttpFoundation\Response;
 
 class ParserService
@@ -20,11 +22,17 @@ class ParserService
 
     private const NASA_API_BASE_URL = 'https://api.nasa.gov';
 
-    public function __construct(Client $httpClient, EntityManagerInterface $entityManager, string $nasaApiKey)
-    {
+    private AdapterInterface $cache;
+
+    public function __construct(Client $httpClient,
+                                EntityManagerInterface $entityManager,
+                                string $nasaApiKey,
+                                AdapterInterface $cache
+    ) {
         $this->httpClient = $httpClient;
         $this->entityManager = $entityManager;
         $this->nasaApiKey = $nasaApiKey;
+        $this->cache = $cache;
     }
 
     public function getNearEarthObjectsForThreeLastDays()
@@ -32,7 +40,6 @@ class ParserService
         $endDate = new DateTimeImmutable();
         //TODO: refactor to any days amount
         $startDate = $endDate->modify('-3 days');
-
 
         $response = $this->httpClient->get(self::NASA_API_BASE_URL . '/neo/rest/v1/feed',
             [
@@ -51,14 +58,24 @@ class ParserService
             );
         }
 
-        $this->parseResponse($response);
+        $responseContent = $response->getBody()->getContents();
+
+        $responseContentCached = $this->cache->getItem('nasa_api_response_' . md5($responseContent));
+
+        if (!$responseContentCached->isHit()) {
+            $responseContentCached->set($responseContent);
+            $responseContentCached->expiresAt(new DateTime('tomorrow'));
+            $this->cache->save($responseContentCached);
+        }
+
+        $this->parseResponse($responseContentCached->get());
 
         return $response;
     }
 
     private function parseResponse($response)
     {
-        $decodedContent = json_decode($response->getBody()->getContents(), true);
+        $decodedContent = json_decode($response, true);
 
         $nearEarthObjects = $decodedContent['near_earth_objects'];
 

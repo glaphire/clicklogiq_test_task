@@ -15,9 +15,9 @@ class NasaApiNearEarthObjectParser extends Command
 
     private ParserService $parserService;
 
-    public function __construct($name = null, ParserService $parserService)
+    public function __construct(ParserService $parserService)
     {
-        parent::__construct($name);
+        parent::__construct($name = null);
         $this->parserService = $parserService;
     }
 
