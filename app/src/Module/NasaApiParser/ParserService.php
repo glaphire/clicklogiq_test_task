@@ -2,6 +2,7 @@
 
 namespace App\Module\NasaApiParser;
 
+use App\DTO\NearEarthObjectDTO;
 use App\Entity\NearEarthObject;
 use App\Module\NasaApiParser\Exception\NasaApiParserException;
 use App\Repository\NearEarthObjectRepository;
@@ -10,6 +11,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Client;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Validator\Validation;
 
 class ParserService
 {
@@ -48,33 +50,58 @@ class ParserService
             $this->cache->save($responseContent);
         }
 
-        $this->parseResponse($responseContent->get());
+        $this->parseNearEarthObjectsFromResponse($responseContent->get());
 
         return $responseContent;
     }
 
-    private function parseResponse($response)
+    private function parseNearEarthObjectsFromResponse(string $responseContent)
     {
-        $decodedContent = json_decode($response, true);
+        $decodedContent = json_decode($responseContent, true);
+
+        $validator = Validation::createValidator();
 
         $nearEarthObjects = $decodedContent['near_earth_objects'];
 
-        /**
-         * @var NearEarthObjectRepository $NearEarthObjectRepository
-         */
-        $NearEarthObjectRepository = $this->entityManager->getRepository(NearEarthObject::class);
+        foreach ($nearEarthObjects as $date => $groupedObjectsByDate) {
+            {
+                foreach ($groupedObjectsByDate as $index => $singleObject) {
 
-        foreach ($nearEarthObjects as $date => $groupedByDate) {
-            foreach ($groupedByDate as $i => $singleNearEarthObject) {
-                if ($NearEarthObjectRepository->findOneReference($singleNearEarthObject['neo_reference_id'])) {
-                    continue;
+                    $dto = new NearEarthObjectDTO(
+                        new \DateTime(),
+                        $singleObject['neo_reference_id'],
+                        $singleObject['name'],
+                        $singleObject['close_approach_data'][0]['relative_velocity']['kilometers_per_hour'],
+                        $singleObject['is_potentially_hazardous_asteroid']
+                    );
+
+                    $violations = $validator->validate($dto);
+
+                    if (count($violations) !== 0) {
+                        foreach ($violations as $violation) {
+                            throw new NasaApiParserException('Validation error occured: ' . $violation->getMessage);
+                        }
+                    }
                 }
-
-                $this->saveNearEarthObject($singleNearEarthObject, $date);
             }
         }
 
-        $this->entityManager->flush();
+//        /**
+//         * @var NearEarthObjectRepository $NearEarthObjectRepository
+//         */
+//        $NearEarthObjectRepository = $this->entityManager->getRepository(NearEarthObject::class);
+
+//        foreach ($nearEarthObjects as $date => $groupedByDate) {
+//            foreach ($groupedByDate as $i => $singleNearEarthObject) {
+//                if ($NearEarthObjectRepository->findOneReference($singleNearEarthObject['neo_reference_id'])) {
+//                    continue;
+//                }
+//
+//                $this->saveNearEarthObject($singleNearEarthObject, $date);
+//            }
+//        }
+//
+//        $this->entityManager->flush();
     }
 
     //TODO: refactor to use Serializer (deserializer)

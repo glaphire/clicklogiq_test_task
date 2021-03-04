@@ -8,10 +8,10 @@ use Symfony\Component\Validator\Constraint as Assert;
 class NearEarthObjectDTO
 {
     /**
-     * @Assert\Date
+     * @Assert\Type(type="date")
      * @Assert\NotBlank
      */
-    public DateTime $date;
+    public \DateTime $date;
 
     /**
      * @Assert\Type(type="integer")
@@ -49,7 +49,7 @@ class NearEarthObjectDTO
      * @param $speed
      * @param bool $isHazardous
      */
-    public function __construct(string $date, int $reference, string $name, float $speed, bool $isHazardous = false)
+    public function __construct($date, int $reference, string $name, float $speed, bool $isHazardous = false)
     {
         $this->date = $date;
         $this->reference = $reference;

@@ -1,5 +1,5 @@
 
-FROM php:7.4.8-fpm
+FROM php:7.4.11-fpm
 
 RUN apt-get update \
     && apt-get upgrade -y \
