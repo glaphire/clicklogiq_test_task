@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\NearEarthObjectRepository;
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -18,28 +19,28 @@ class NearEarthObject
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
      */
-    private $id;
+    private int $id;
 
     /**
      * @ORM\Column(type="date")
      */
-    private $date;
+    private DateTimeImmutable $date;
 
     /**
      * @ORM\Column(type="integer", unique=true)
      */
-    private $reference;
+    private int $reference;
 
     /**
      * @ORM\Column(type="string", length=255)
      */
-    private $name;
+    private string $name;
 
     /**
      * @ORM\Column(type="float")
      * Stored as kilometers per hour.
      */
-    private $speed;
+    private float $speed;
 
     /**
      * @ORM\Column(type="boolean")
@@ -48,19 +49,19 @@ class NearEarthObject
      *     message="The value {{ value }} is not a valid {{ type }}."
      * )
      */
-    private $is_hazardous = false;
+    private bool $is_hazardous = false;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getDate(): ?\DateTimeInterface
+    public function getDate(): ?DateTimeImmutable
     {
         return $this->date;
     }
 
-    public function setDate(\DateTimeInterface $date): self
+    public function setDate(DateTimeImmutable $date): self
     {
         $this->date = $date;
 

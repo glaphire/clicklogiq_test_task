@@ -2,7 +2,7 @@
 
 namespace App\DTO;
 
-use DateTime;
+use DateTimeImmutable;
 use Symfony\Component\Validator\Constraint as Assert;
 
 class NearEarthObjectDTO
@@ -11,7 +11,7 @@ class NearEarthObjectDTO
      * @Assert\Type(type="date")
      * @Assert\NotBlank
      */
-    public \DateTime $date;
+    public DateTimeImmutable $date;
 
     /**
      * @Assert\Type(type="integer")
@@ -49,8 +49,13 @@ class NearEarthObjectDTO
      * @param $speed
      * @param bool $isHazardous
      */
-    public function __construct($date, int $reference, string $name, float $speed, bool $isHazardous = false)
-    {
+    public function __construct(
+        DateTimeImmutable $date,
+        int $reference,
+        string $name,
+        float $speed,
+        bool $isHazardous = false
+    ) {
         $this->date = $date;
         $this->reference = $reference;
         $this->name = $name;

@@ -5,8 +5,9 @@ namespace App\Module\NasaApiParser;
 use App\DTO\NearEarthObjectDTO;
 use App\Entity\NearEarthObject;
 use App\Module\NasaApiParser\Exception\NasaApiParserException;
-use App\Repository\NearEarthObjectRepository;
 use DateTimeImmutable;
+use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Client;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
@@ -27,15 +28,19 @@ class ParserService
 
     private AdapterInterface $cache;
 
+    private ManagerRegistry $doctrine;
+
     public function __construct(Client $httpClient,
                                 EntityManagerInterface $entityManager,
                                 AdapterInterface $cache,
+                                ManagerRegistry $doctrine,
                                 string $nasaApiKey
     ) {
         $this->httpClient = $httpClient;
         $this->entityManager = $entityManager;
         $this->cache = $cache;
         $this->nasaApiKey = $nasaApiKey;
+        $this->doctrine = $doctrine;
     }
 
     public function getNearEarthObjectsForThreeLastDays()
@@ -68,7 +73,7 @@ class ParserService
                 foreach ($groupedObjectsByDate as $index => $singleObject) {
 
                     $dto = new NearEarthObjectDTO(
-                        new \DateTime(),
+                        DateTimeImmutable::createFromFormat('Y-m-d', $date),
                         $singleObject['neo_reference_id'],
                         $singleObject['name'],
                         $singleObject['close_approach_data'][0]['relative_velocity']['kilometers_per_hour'],
@@ -82,40 +87,29 @@ class ParserService
                             throw new NasaApiParserException('Validation error occured: ' . $violation->getMessage);
                         }
                     }
+
+                    $nearEarthObject = new NearEarthObject();
+                    $nearEarthObject
+                        ->setDate($dto->date)
+                        ->setReference($dto->reference)
+                        ->setName($dto->name)
+                        ->setSpeed($dto->speed)
+                        ->setIsHazardous($dto->isHazardous)
+                    ;
+
+                    try {
+                        $this->entityManager->persist($nearEarthObject);
+                        $this->entityManager->flush();
+                    } catch (UniqueConstraintViolationException $e) {
+                        //need to manually reset manager to continue insert new rows to database
+                        if (!$this->entityManager->isOpen()) {
+                            $this->doctrine->resetManager();
+                        }
+                    }
+
                 }
             }
         }
-
-//        /**
-//         * @var NearEarthObjectRepository $NearEarthObjectRepository
-//         */
-//        $NearEarthObjectRepository = $this->entityManager->getRepository(NearEarthObject::class);
-
-//        foreach ($nearEarthObjects as $date => $groupedByDate) {
-//            foreach ($groupedByDate as $i => $singleNearEarthObject) {
-//                if ($NearEarthObjectRepository->findOneReference($singleNearEarthObject['neo_reference_id'])) {
-//                    continue;
-//                }
-//
-//                $this->saveNearEarthObject($singleNearEarthObject, $date);
-//            }
-//        }
-//
-//        $this->entityManager->flush();
-    }
-
-    //TODO: refactor to use Serializer (deserializer)
-    private function saveNearEarthObject(array $nearEarthObjectRawArray, string $date)
-    {
-        $nearEarthObjectEntity = new NearEarthObject();
-        $nearEarthObjectEntity->setDate(new DateTimeImmutable($date));
-        $nearEarthObjectEntity->setReference($nearEarthObjectRawArray['neo_reference_id']);
-        $nearEarthObjectEntity->setName($nearEarthObjectRawArray['name']);
-
-        $nearEarthObjectEntity
-            ->setSpeed($nearEarthObjectRawArray['close_approach_data'][0]['relative_velocity']['kilometers_per_hour']);
-        $nearEarthObjectEntity->setIsHazardous($nearEarthObjectRawArray['is_potentially_hazardous_asteroid']);
-        $this->entityManager->persist($nearEarthObjectEntity);
     }
 
     private function getNearEarthObjectsFromNasa(): string
