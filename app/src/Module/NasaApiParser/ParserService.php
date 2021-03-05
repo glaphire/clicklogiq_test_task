@@ -88,25 +88,7 @@ class ParserService
                         }
                     }
 
-                    $nearEarthObject = new NearEarthObject();
-                    $nearEarthObject
-                        ->setDate($dto->date)
-                        ->setReference($dto->reference)
-                        ->setName($dto->name)
-                        ->setSpeed($dto->speed)
-                        ->setIsHazardous($dto->isHazardous)
-                    ;
-
-                    try {
-                        $this->entityManager->persist($nearEarthObject);
-                        $this->entityManager->flush();
-                    } catch (UniqueConstraintViolationException $e) {
-                        //need to manually reset manager to continue insert new rows to database
-                        if (!$this->entityManager->isOpen()) {
-                            $this->doctrine->resetManager();
-                        }
-                    }
-
+                    $this->saveNearEarthObject($dto);
                 }
             }
         }
@@ -135,5 +117,29 @@ class ParserService
         }
 
         return $response->getBody()->getContents();
+    }
+
+    private function saveNearEarthObject(NearEarthObjectDTO $dto): bool
+    {
+        $nearEarthObject = new NearEarthObject();
+        $nearEarthObject
+            ->setDate($dto->date)
+            ->setReference($dto->reference)
+            ->setName($dto->name)
+            ->setSpeed($dto->speed)
+            ->setIsHazardous($dto->isHazardous)
+        ;
+
+        try {
+            $this->entityManager->persist($nearEarthObject);
+            $this->entityManager->flush();
+        } catch (UniqueConstraintViolationException $e) {
+            //need to manually reset manager to continue insert new rows to database
+            if (!$this->entityManager->isOpen()) {
+                $this->doctrine->resetManager();
+            }
+        }
+
+        return true;
     }
 }
