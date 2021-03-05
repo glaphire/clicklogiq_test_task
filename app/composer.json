@@ -74,5 +74,7 @@
             "allow-contrib": false,
             "require": "5.1.*"
         }
-    }
+    },
+    "name": "test",
+    "description": ""
 }
