@@ -13,6 +13,7 @@ use GuzzleHttp\Client;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\Validation;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class ParserService
 {
@@ -30,6 +31,8 @@ class ParserService
 
     private ManagerRegistry $doctrine;
 
+    private ValidatorInterface $validator;
+
     public function __construct(Client $httpClient,
                                 EntityManagerInterface $entityManager,
                                 AdapterInterface $cache,
@@ -41,6 +44,7 @@ class ParserService
         $this->cache = $cache;
         $this->nasaApiKey = $nasaApiKey;
         $this->doctrine = $doctrine;
+        $this->validator = Validation::createValidator();
     }
 
     public function getNearEarthObjectsForThreeLastDays()
@@ -64,29 +68,15 @@ class ParserService
     {
         $decodedContent = json_decode($responseContent, true);
 
-        $validator = Validation::createValidator();
-
         $nearEarthObjects = $decodedContent['near_earth_objects'];
 
         foreach ($nearEarthObjects as $date => $groupedObjectsByDate) {
             foreach ($groupedObjectsByDate as $index => $singleObject) {
-                $dto = new NearEarthObjectDTO(
-                    DateTimeImmutable::createFromFormat('Y-m-d', $date),
-                    $singleObject['neo_reference_id'],
-                    $singleObject['name'],
-                    $singleObject['close_approach_data'][0]['relative_velocity']['kilometers_per_hour'],
-                    $singleObject['is_potentially_hazardous_asteroid']
-                );
+                $dto = $this->createNearEarthObjectDtoFromRawData($date, $singleObject);
 
-                $violations = $validator->validate($dto);
-
-                if (count($violations) !== 0) {
-                    foreach ($violations as $violation) {
-                        throw new NasaApiParserException('Validation error occured: ' . $violation->getMessage);
-                    }
+                if ($this->isNearEarthObjectValid($dto)) {
+                    $this->saveNearEarthObject($dto);
                 }
-
-                $this->saveNearEarthObject($dto);
             }
         }
     }
@@ -138,5 +128,39 @@ class ParserService
         }
 
         return true;
+    }
+
+    private function isNearEarthObjectValid(NearEarthObjectDTO $dto): bool
+    {
+        $violations = $this->validator->validate($dto);
+        $validationErrorMessages = [];
+
+        if (count($violations) !== 0) {
+            foreach ($violations as $violation) {
+                $validationErrorMessages[] = $violation->getMessage();
+            }
+
+            throw new NasaApiParserException(
+                sprintf(
+                    'Validation errors occured while processing Near Earth Objects: %s',
+                    json_encode($validationErrorMessages)
+                )
+            );
+        }
+
+        return true;
+    }
+
+    private function createNearEarthObjectDtoFromRawData(string $date, array $rawData): NearEarthObjectDTO
+    {
+        $dto = new NearEarthObjectDTO(
+            DateTimeImmutable::createFromFormat('Y-m-d', $date),
+            $rawData['neo_reference_id'],
+            $rawData['name'],
+            $rawData['close_approach_data'][0]['relative_velocity']['kilometers_per_hour'],
+            $rawData['is_potentially_hazardous_asteroid']
+        );
+
+        return $dto;
     }
 }
