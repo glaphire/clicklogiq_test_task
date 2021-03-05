@@ -69,27 +69,24 @@ class ParserService
         $nearEarthObjects = $decodedContent['near_earth_objects'];
 
         foreach ($nearEarthObjects as $date => $groupedObjectsByDate) {
-            {
-                foreach ($groupedObjectsByDate as $index => $singleObject) {
+            foreach ($groupedObjectsByDate as $index => $singleObject) {
+                $dto = new NearEarthObjectDTO(
+                    DateTimeImmutable::createFromFormat('Y-m-d', $date),
+                    $singleObject['neo_reference_id'],
+                    $singleObject['name'],
+                    $singleObject['close_approach_data'][0]['relative_velocity']['kilometers_per_hour'],
+                    $singleObject['is_potentially_hazardous_asteroid']
+                );
 
-                    $dto = new NearEarthObjectDTO(
-                        DateTimeImmutable::createFromFormat('Y-m-d', $date),
-                        $singleObject['neo_reference_id'],
-                        $singleObject['name'],
-                        $singleObject['close_approach_data'][0]['relative_velocity']['kilometers_per_hour'],
-                        $singleObject['is_potentially_hazardous_asteroid']
-                    );
+                $violations = $validator->validate($dto);
 
-                    $violations = $validator->validate($dto);
-
-                    if (count($violations) !== 0) {
-                        foreach ($violations as $violation) {
-                            throw new NasaApiParserException('Validation error occured: ' . $violation->getMessage);
-                        }
+                if (count($violations) !== 0) {
+                    foreach ($violations as $violation) {
+                        throw new NasaApiParserException('Validation error occured: ' . $violation->getMessage);
                     }
-
-                    $this->saveNearEarthObject($dto);
                 }
+
+                $this->saveNearEarthObject($dto);
             }
         }
     }
