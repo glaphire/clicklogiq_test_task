@@ -28,7 +28,9 @@ services:
         networks:
             - internal
         environment:
-            XDEBUG_CONFIG: "remote_host=192.168.229.0/28 remote_enable=1"
+            PHP_INI_XDEBUG__REMOTE_PORT: 9007
+            PHP_EXTENSION_XDEBUG: 1
+            XDEBUG_CONFIG: "emote_port=9007 remote_autostart=1"
             PHP_IDE_CONFIG: "serverName=ClickLogiq"
             COMPOSER_AUTH: ${COMPOSER_AUTH}
             COMPOSER_MEMORY_LIMIT: ${COMPOSER_MEMORY_LIMIT}
@@ -62,4 +64,4 @@ networks:
         ipam:
             driver: default
             config:
-                -   subnet: 192.168.229.0/28
+                -   subnet: 192.168.229.3/28

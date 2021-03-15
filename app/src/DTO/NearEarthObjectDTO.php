@@ -8,7 +8,7 @@ use Symfony\Component\Validator\Constraint as Assert;
 class NearEarthObjectDTO
 {
     /**
-     * @Assert\Type(type="date")
+     * @Assert\Type(type="\DateTimeImmutable")
      * @Assert\NotBlank
      */
     public DateTimeImmutable $date;
