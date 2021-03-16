@@ -16,7 +16,7 @@ RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y git
 
-RUN pecl install xdebug-2.8.1 \
+RUN pecl install xdebug-2.9.3 \
     && docker-php-ext-enable xdebug
 
 COPY php.ini /usr/local/etc/php/conf.d/php.ini
