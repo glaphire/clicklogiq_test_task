@@ -10,6 +10,9 @@ use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
+use Symfony\Component\Serializer\Normalizer\ArrayDenormalizer;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+use Symfony\Component\Serializer\Serializer;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -40,7 +43,7 @@ class ParserService
         $this->apiClient = $apiClient;
     }
 
-    public function parseNearEarthObjectList(DateTimeImmutable $startDate = null)
+    public function processNearEarthObjectList(DateTimeImmutable $startDate = null)
     {
         $startDate = $startDate ?? new DateTimeImmutable('-3 days');
         $responseContent = $this->cache->getItem(self::CACHE_NEO_GET_LIST_RESPONSE);
@@ -53,12 +56,12 @@ class ParserService
             $this->cache->save($responseContent);
         }
 
-        $this->parseNearEarthObjectsFromResponse($responseContent->get());
+        $this->parseNearEarthObjectListResponse($responseContent->get());
 
         return $responseContent;
     }
 
-    private function parseNearEarthObjectsFromResponse(string $responseContent)
+    private function parseNearEarthObjectListResponse(string $responseContent)
     {
         $decodedContent = json_decode($responseContent, true);
 
@@ -75,6 +78,7 @@ class ParserService
         }
     }
 
+    //TODO: refactor to use Serializer component
     private function saveNearEarthObject(NearEarthObjectDTO $dto): bool
     {
         $nearEarthObject = new NearEarthObject();

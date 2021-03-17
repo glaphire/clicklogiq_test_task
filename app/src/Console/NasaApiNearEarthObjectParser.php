@@ -34,7 +34,7 @@ class NasaApiNearEarthObjectParser extends Command
         $output->writeln('Getting Near Earth Objects from NASA API');
 
         try {
-            $this->parserService->parseNearEarthObjectList();
+            $this->parserService->processNearEarthObjectList();
         } catch (NasaApiException $e) {
             $output->writeln("<error>" . $e->getMessage() . "</error>");
 
