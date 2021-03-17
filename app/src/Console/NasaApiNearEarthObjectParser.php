@@ -2,7 +2,7 @@
 
 namespace App\Console;
 
-use App\Module\NasaApiParser\Exception\NasaApiParserException;
+use App\Module\NasaApiParser\Exception\NasaApiException;
 use App\Module\NasaApiParser\ParserService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -35,7 +35,7 @@ class NasaApiNearEarthObjectParser extends Command
 
         try {
             $this->parserService->getNearEarthObjectsForThreeLastDays();
-        } catch (NasaApiParserException $e) {
+        } catch (NasaApiException $e) {
             $output->writeln("<error>" . $e->getMessage() . "</error>");
 
             return Command::FAILURE;

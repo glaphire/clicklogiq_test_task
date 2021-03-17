@@ -32,5 +32,12 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
-    GuzzleHttp\Client:
+    nasa_api.http_client:
+        class: GuzzleHttp\Client
         autowire: true
+        arguments:
+            - base_uri: 'https://api.nasa.gov/'
+
+    App\Module\NasaApiParser\ApiClient:
+        arguments:
+            - '@nasa_api.http_client'

@@ -4,6 +4,6 @@ namespace App\Module\NasaApiParser\Exception;
 
 use Exception;
 
-class NasaApiParserException extends Exception
+class NasaApiException extends Exception
 {
 }

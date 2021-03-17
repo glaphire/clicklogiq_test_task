@@ -4,26 +4,18 @@ namespace App\Module\NasaApiParser;
 
 use App\DTO\NearEarthObjectDTO;
 use App\Entity\NearEarthObject;
-use App\Module\NasaApiParser\Exception\NasaApiParserException;
+use App\Module\NasaApiParser\Exception\NasaApiException;
 use DateTimeImmutable;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\EntityManagerInterface;
-use GuzzleHttp\Client;
 use Symfony\Component\Cache\Adapter\AdapterInterface;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class ParserService
 {
-    private const NASA_API_BASE_URL = 'https://api.nasa.gov';
-
     private const CACHE_KEY_RESPONSE_CONTENT = 'nasa_api_response_content';
-
-    private Client $httpClient;
-
-    private string $nasaApiKey;
 
     private EntityManagerInterface $entityManager;
 
@@ -33,18 +25,19 @@ class ParserService
 
     private ValidatorInterface $validator;
 
-    public function __construct(Client $httpClient,
+    private ApiClient $apiClient;
+
+    public function __construct(ApiClient $apiClient,
                                 EntityManagerInterface $entityManager,
                                 AdapterInterface $cache,
-                                ManagerRegistry $doctrine,
-                                string $nasaApiKey
+                                ManagerRegistry $doctrine
+
     ) {
-        $this->httpClient = $httpClient;
         $this->entityManager = $entityManager;
         $this->cache = $cache;
-        $this->nasaApiKey = $nasaApiKey;
         $this->doctrine = $doctrine;
         $this->validator = Validation::createValidator();
+        $this->apiClient = $apiClient;
     }
 
     public function getNearEarthObjectsForThreeLastDays()
@@ -53,7 +46,8 @@ class ParserService
 
         if (!$responseContent->isHit()) {
 
-            $responseContent->set($this->getNearEarthObjectsFromNasa());
+            $apiResponse = $this->apiClient->listNearEarthObjects(new DateTimeImmutable('-3 days'));
+            $responseContent->set($apiResponse);
             $responseContent->expiresAt(new DateTimeImmutable('tomorrow'));
 
             $this->cache->save($responseContent);
@@ -79,31 +73,6 @@ class ParserService
                 }
             }
         }
-    }
-
-    private function getNearEarthObjectsFromNasa(): string
-    {
-        $endDate = new DateTimeImmutable();
-        $startDate = $endDate->modify('-3 days');
-
-        $response = $this->httpClient->get(self::NASA_API_BASE_URL . '/neo/rest/v1/feed',
-            [
-                'query' => [
-                    'start_date' => $startDate->format('Y-m-d'),
-                    'end_date' => $endDate->format('Y-m-d'),
-                    'detailed' => 'false',
-                    'api_key' => $this->nasaApiKey
-                ],
-            ]);
-
-        if ($response->getStatusCode() !== Response::HTTP_OK) {
-            throw new NasaApiParserException(sprintf(
-                    'Failed to get response from NASA API: %s HTTP status code',
-                    $response->getStatusCode())
-            );
-        }
-
-        return $response->getBody()->getContents();
     }
 
     private function saveNearEarthObject(NearEarthObjectDTO $dto): bool
@@ -140,7 +109,7 @@ class ParserService
                 $validationErrorMessages[] = $violation->getMessage();
             }
 
-            throw new NasaApiParserException(
+            throw new NasaApiException(
                 sprintf(
                     'Validation errors occured while processing Near Earth Objects: %s',
                     json_encode($validationErrorMessages)
