@@ -15,7 +15,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class ParserService
 {
-    private const CACHE_KEY_RESPONSE_CONTENT = 'nasa_api_response_content';
+    const CACHE_NEO_GET_LIST_RESPONSE = 'nasa_api_neo_get_list_response';
 
     private EntityManagerInterface $entityManager;
 
@@ -40,13 +40,13 @@ class ParserService
         $this->apiClient = $apiClient;
     }
 
-    public function getNearEarthObjectsForThreeLastDays()
+    public function parseNearEarthObjectList(DateTimeImmutable $startDate = null)
     {
-        $responseContent = $this->cache->getItem(self::CACHE_KEY_RESPONSE_CONTENT);
+        $startDate = $startDate ?? new DateTimeImmutable('-3 days');
+        $responseContent = $this->cache->getItem(self::CACHE_NEO_GET_LIST_RESPONSE);
 
         if (!$responseContent->isHit()) {
-
-            $apiResponse = $this->apiClient->listNearEarthObjects(new DateTimeImmutable('-3 days'));
+            $apiResponse = $this->apiClient->listNearEarthObjects($startDate);
             $responseContent->set($apiResponse);
             $responseContent->expiresAt(new DateTimeImmutable('tomorrow'));
 
