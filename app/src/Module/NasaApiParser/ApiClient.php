@@ -5,6 +5,7 @@ namespace App\Module\NasaApiParser;
 use App\Module\NasaApiParser\Exception\NasaApiException;
 use DateTimeImmutable;
 use GuzzleHttp\Client;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class ApiClient
@@ -21,30 +22,26 @@ class ApiClient
         $this->nasaApiKey = $nasaApiKey;
     }
 
-    public function listNearEarthObjects(DateTimeImmutable $startDate, ?DateTimeImmutable $endDate = null): ?string
+    public function listNearEarthObjects(DateTimeImmutable $startDate, ?DateTimeImmutable $endDate = null): string
     {
         $endDate = $endDate ?? new DateTimeImmutable();
 
-        $response = $this->httpClient->get(self::URL_NEO_LIST,
-            [
-                'query' => [
-                    'start_date' => $startDate->format('Y-m-d'),
-                    'end_date' => $endDate->format('Y-m-d'),
-                    'detailed' => 'false',
-                    'api_key' => $this->nasaApiKey
-                ],
-            ]);
+        $response = $this->makeRequest(Request::METHOD_GET, self::URL_NEO_LIST, [
+            'query' => [
+                'start_date' => $startDate->format('Y-m-d'),
+                'end_date' => $endDate->format('Y-m-d'),
+                'detailed' => 'false',
+                'api_key' => $this->nasaApiKey
+            ],
+        ]);
 
-        //TODO: refactor to avoid returning null when exception is thrown obviously
-        if ($this->isResponseStatusSuccessful($response)) {
-            return $response->getBody()->getContents();
-        }
-
-        return null;
+        return $response;
     }
 
-    private function isResponseStatusSuccessful($response): bool
+    protected function makeRequest(string $method, string $relUrl, array $options = []): string
     {
+        $response = $this->httpClient->request($method, $relUrl, $options);
+
         if ($response->getStatusCode() !== Response::HTTP_OK) {
             throw new NasaApiException(
                 sprintf(
@@ -56,6 +53,6 @@ class ApiClient
             );
         }
 
-        return true;
+        return $response->getBody()->getContents();
     }
 }
