@@ -78,6 +78,7 @@ class NearEarthObjectController extends AbstractController
             ->entityManager
             ->getRepository(NearEarthObject::class);
 
+        //TODO: refactor to Criteria instead of QueryBuilder
         $queryBuilder = $nearEarthObjectRepository
             ->isHazardousQueryBuilder($isHazardous);
 
