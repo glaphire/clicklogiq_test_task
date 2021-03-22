@@ -54,24 +54,8 @@ class NearEarthObjectController extends AbstractController
     /**
      * @Route("/neo/fastest", name="neo_fastest", methods={"GET"})
      */
-    public function getFastestNearEarthObject(Request $request)
+    public function getFastestNearEarthObject(Request $request, bool $isHazardous)
     {
-        throw new \Exception('1111');
-        $constraints = new Collection([
-            'hazardous' => [new Optional(new Type(['type' => 'boolean']))],
-        ]);
-
-        //TODO: refactor to DTO and argument resolvers
-        //TODO: See "Symfony 5 Deep Dive! The HttpKernel Request-Response Flow" course
-        $errors = $this->validate($request->get('hazardous', false), $constraints);
-
-        //TODO: refactor to normal errors response
-        if ($errors) {
-            return $this->json($errors, 400);
-        }
-
-        $isHazardous = filter_var($request->get('hazardous', false), FILTER_VALIDATE_BOOLEAN);
-
         /**
          * @var NearEarthObjectRepository $nearEarthObjectRepository
          */
@@ -92,10 +76,8 @@ class NearEarthObjectController extends AbstractController
     /**
      * @Route("/neo/best-month", name="neo_best_month", methods={"GET"})
      */
-    public function getMonthWithMostNearEarthObjects(Request $request)
+    public function getMonthWithMostNearEarthObjects(Request $request, bool $isHazardous)
     {
-        $isHazardous = filter_var($request->get('hazardous', false), FILTER_VALIDATE_BOOLEAN);
-
         /**
          * @var NearEarthObjectRepository $nearEarthObjectRepository
          */
@@ -107,29 +89,5 @@ class NearEarthObjectController extends AbstractController
             ->isHazardousQueryBuilder($isHazardous);
 
         //TODO: write rest of endpoint logic
-    }
-
-    /**
-     * @param $value
-     * @param $constraints
-     *
-     * @return array|void
-     */
-    protected function validate($value, $constraints)
-    {
-        $validator = Validation::createValidator();
-        $violations = $validator->validate($value, $constraints);
-        $messages = [];
-
-        if (0 === count($violations)) {
-            return;
-        }
-
-        foreach ($violations as $violation) {
-            /* @var ConstraintViolation $violation */
-            $messages[] = $violation->getMessage();
-        }
-
-        return $messages;
     }
 }
