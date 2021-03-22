@@ -56,6 +56,7 @@ class NearEarthObjectController extends AbstractController
      */
     public function getFastestNearEarthObject(Request $request)
     {
+        throw new \Exception('1111');
         $constraints = new Collection([
             'hazardous' => [new Optional(new Type(['type' => 'boolean']))],
         ]);
