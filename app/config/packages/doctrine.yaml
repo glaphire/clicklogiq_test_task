@@ -13,7 +13,7 @@ doctrine:
         #https://stackoverflow.com/a/38997144/5371978 - enabling beberlei/doctrineextensions functions
         dql:
             datetime_functions:
-                DAY: DoctrineExtensions\Query\Mysql\Day
+                MONTH: DoctrineExtensions\Query\Mysql\Month
         mappings:
             App:
                 is_bundle: false
