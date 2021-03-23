@@ -58,16 +58,13 @@ class NearEarthObjectRepository extends ServiceEntityRepository
     {
         $query = $this->createQueryBuilder('neo');
 
-        $query->select('MONTH(neo.date) AS best_month, COUNT(neo.id) as neo_count')
+        $query->select('MONTHNAME(neo.date) AS best_month')
             ->addCriteria(self::createIsHazardousCriteria($isHazardous))
             ->groupBy('best_month')
-            ->orderBy('neo_count')
+            ->orderBy('COUNT(neo.id)')
             ->setMaxResults(1);
         ;
 
-        return $query->getQuery()->execute();
-
-        //TODO: rewrite raw SQL query to ORM query
-        //SELECT MONTH(date), COUNT(id) FROM near_earth_object GROUP BY MONTH(date) ORDER BY COUNT(id) DESC LIMIT 1
+        return $query->getQuery()->getSingleScalarResult();
     }
 }

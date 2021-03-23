@@ -8,6 +8,7 @@ use App\Repository\NearEarthObjectRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Constraints\Collection;
 use Symfony\Component\Validator\Constraints\Optional;
@@ -82,8 +83,13 @@ class NearEarthObjectController extends AbstractController
             ->entityManager
             ->getRepository(NearEarthObject::class);
 
-        $month = $nearEarthObjectRepository->getMonthWithMostNearEarthObjects($isHazardous);
+        $monthName = $nearEarthObjectRepository->getMonthWithMostNearEarthObjects($isHazardous);
 
-        return $this->json($month, 200, [], ['datetime_format' => 'Y-m-d']);
+        return $this->json(
+            ['best_month' => $monthName],
+            Response::HTTP_OK,
+            [],
+            ['datetime_format' => 'Y-m-d']
+        );
     }
 }
