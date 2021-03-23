@@ -7,7 +7,7 @@ use Symfony\Component\HttpKernel\Controller\ArgumentValueResolverInterface;
 use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadata;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
-class IsHazardousValueResolver implements ArgumentValueResolverInterface
+class IsHazardousResolver implements ArgumentValueResolverInterface
 {
     public function supports(Request $request, ArgumentMetadata $argument)
     {
@@ -22,14 +22,12 @@ class IsHazardousValueResolver implements ArgumentValueResolverInterface
     {
         $isHazardous = $request->get('hazardous');
 
-        if (empty($isHazardous)) {
-            yield false;
-        }
-
         if ($isHazardous === 'true') {
             yield true;
-        } elseif ($isHazardous === 'false') {
+        } elseif ($isHazardous === 'false' || empty($isHazardous)) {
             yield false;
-        } else throw new BadRequestHttpException("Parameter 'hazardous' should be absent, 'true' or 'false'");
+        } else {
+            throw new BadRequestHttpException("Parameter 'hazardous' should be absent, 'true' or 'false'");
+        }
     }
 }
