@@ -42,7 +42,8 @@ class NearEarthObjectController extends AbstractController
             ->getRepository(NearEarthObject::class);
 
         $queryBuilder = $nearEarthObjectRepository
-            ->isHazardousQueryBuilder(true);
+            ->createQueryBuilder('neo')
+            ->addCriteria(NearEarthObjectRepository::createIsHazardousCriteria(true));
 
         $paginatedCollection = $this
             ->paginationFactory
@@ -63,12 +64,8 @@ class NearEarthObjectController extends AbstractController
             ->entityManager
             ->getRepository(NearEarthObject::class);
 
-        //TODO: refactor to Criteria instead of QueryBuilder
-        $queryBuilder = $nearEarthObjectRepository
-            ->isHazardousQueryBuilder($isHazardous);
-
         $fastestNearEarthObject = $nearEarthObjectRepository
-            ->getFastestNearEarthObject($queryBuilder);
+            ->getFastestNearEarthObject($isHazardous);
 
         return $this->json($fastestNearEarthObject, 200, [], ['datetime_format' => 'Y-m-d']);
     }
@@ -85,9 +82,8 @@ class NearEarthObjectController extends AbstractController
             ->entityManager
             ->getRepository(NearEarthObject::class);
 
-        $queryBuilder = $nearEarthObjectRepository
-            ->isHazardousQueryBuilder($isHazardous);
+        $month = $nearEarthObjectRepository->getMonthWithMostNearEarthObjects($isHazardous);
 
-        //TODO: write rest of endpoint logic
+        return $this->json($month, 200, [], ['datetime_format' => 'Y-m-d']);
     }
 }

@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\NearEarthObject;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -15,8 +16,6 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class NearEarthObjectRepository extends ServiceEntityRepository
 {
-    private const ALIAS = 'n';
-
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, NearEarthObject::class);
@@ -24,51 +23,51 @@ class NearEarthObjectRepository extends ServiceEntityRepository
 
     public function findOneReference($value): ?NearEarthObject
     {
-        return $this->createQueryBuilder(self::ALIAS)
-            ->andWhere(self::ALIAS.'.reference = :val')
+        return $this->createQueryBuilder('neo')
+            ->andWhere('neo.reference = :val')
             ->setParameter('val', $value)
             ->getQuery()
             ->getOneOrNullResult()
         ;
     }
 
-    /**
-     * @param bool $isHazardous
-     *
-     * @return QueryBuilder
-     */
-    public function isHazardousQueryBuilder($isHazardous = true, QueryBuilder $qb = null)
+    public function getFastestNearEarthObject(bool $isHazardous = false)
     {
-        return $this->getOrCreateQueryBuilder($qb)
-            ->andWhere(self::ALIAS.'.is_hazardous = :is_hazardous')
-            ->setParameter('is_hazardous', $isHazardous);
-    }
+        $query = $this->createQueryBuilder('neo');
 
-    public function getFastestNearEarthObject(QueryBuilder $qb = null)
-    {
-        $query = $this->getOrCreateQueryBuilder($qb);
-
-        $maxSpeed = $query->select('MAX('.self::ALIAS.'.speed) as max_speed')
+        $maxSpeed = $query
+            ->select('MAX(neo.speed) as max_speed')
+            ->addCriteria(self::createIsHazardousCriteria($isHazardous))
             ->getQuery()
             ->getSingleScalarResult();
 
-        $query->select(self::ALIAS)
-            ->andWhere(self::ALIAS.'.speed='.$maxSpeed)
+        $query->select('neo')
+            ->andWhere('neo.speed='.$maxSpeed)
             ->setMaxResults(1);
 
         return $query->getQuery()->execute();
     }
 
-    public function getMonthWithMostNearEarthObjects(QueryBuilder $qb = null)
+    public static function createIsHazardousCriteria(bool $isHazardous = false): Criteria
     {
-        $query = $this->getOrCreateQueryBuilder($qb);
+        return Criteria::create()
+            ->andWhere(Criteria::expr()->eq('neo.is_hazardous', $isHazardous));
+    }
+
+    public function getMonthWithMostNearEarthObjects(bool $isHazardous)
+    {
+        $query = $this->createQueryBuilder('neo');
+
+        $query->select('MONTH(neo.date), COUNT(neo.id)')
+            ->addCriteria(self::createIsHazardousCriteria($isHazardous))
+            ->groupBy('MONTH(neo.date)')
+            ->orderBy('COUNT(neo.id)')
+            ->setMaxResults(1);
+        ;
+
+        return $query->getQuery()->execute();
 
         //TODO: rewrite raw SQL query to ORM query
         //SELECT MONTH(date), COUNT(id) FROM near_earth_object GROUP BY MONTH(date) ORDER BY COUNT(id) DESC LIMIT 1
-    }
-
-    private function getOrCreateQueryBuilder(QueryBuilder $qb = null)
-    {
-        return $qb ?: $this->createQueryBuilder(self::ALIAS);
     }
 }
