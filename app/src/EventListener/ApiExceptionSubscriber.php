@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\EventListener;
 
 use Exception;
@@ -14,7 +16,7 @@ use Throwable;
 
 class ApiExceptionSubscriber implements EventSubscriberInterface
 {
-    private $isDebug;
+    private bool $isDebug;
 
     private LoggerInterface $logger;
 
@@ -24,7 +26,7 @@ class ApiExceptionSubscriber implements EventSubscriberInterface
         $this->logger = $logger;
     }
 
-    public function onKernelException(ExceptionEvent $event)
+    public function onKernelException(ExceptionEvent $event): void
     {
         $exception = $event->getThrowable();
 
@@ -55,14 +57,14 @@ class ApiExceptionSubscriber implements EventSubscriberInterface
         $event->setResponse($response);
     }
 
-    public static function getSubscribedEvents()
+    public static function getSubscribedEvents(): array
     {
         return [
             KernelEvents::EXCEPTION => 'onKernelException',
         ];
     }
 
-    private function log(Throwable $exception)
+    private function log(Throwable $exception): void
     {
         $log = [
             'code' => $exception->getCode(),
