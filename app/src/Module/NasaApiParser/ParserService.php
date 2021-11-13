@@ -15,7 +15,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class ParserService
 {
-    const CACHE_NEO_GET_LIST_RESPONSE = 'nasa_api_neo_get_list_response';
+    private const CACHE_NEO_GET_LIST_RESPONSE = 'nasa_api_neo_get_list_response';
 
     private EntityManagerInterface $entityManager;
 
@@ -27,11 +27,11 @@ class ParserService
 
     private ApiClient $apiClient;
 
-    public function __construct(ApiClient $apiClient,
-                                EntityManagerInterface $entityManager,
-                                AdapterInterface $cache,
-                                ManagerRegistry $doctrine
-
+    public function __construct(
+        ApiClient $apiClient,
+        EntityManagerInterface $entityManager,
+        AdapterInterface $cache,
+        ManagerRegistry $doctrine
     ) {
         $this->entityManager = $entityManager;
         $this->cache = $cache;
@@ -75,7 +75,7 @@ class ParserService
         }
     }
 
-    //TODO: refactor to use Serializer component
+    //TODO: refactor to use Serializer component (if it's possible)
     private function saveNearEarthObject(NearEarthObjectDTO $dto): bool
     {
         $nearEarthObject = new NearEarthObject();
@@ -91,7 +91,7 @@ class ParserService
             $this->entityManager->persist($nearEarthObject);
             $this->entityManager->flush();
         } catch (UniqueConstraintViolationException $e) {
-            //need to manually reset manager to continue insert new rows to database
+            //need to manually reset manager to continue insert new rows to the database
             if (!$this->entityManager->isOpen()) {
                 $this->doctrine->resetManager();
             }
