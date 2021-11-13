@@ -1,7 +1,6 @@
 # Test assignment for ClickLogiq
 
 ## Assignment
-### Requirements
 
 This test requires:
 * Working with PHP7.* and Symfony 4+
@@ -9,7 +8,7 @@ This test requires:
 * Use Symfony coding standards
 * Nginx or Apache
 
-Required Functionality:
+### Required Functionality:
 
 1. Implement a call to NASA API to retrieve the list of Asteroids based on their closest
 approach date to Earth (Near-Earth Objects - NEOs):
@@ -56,6 +55,22 @@ Define the data model as follows:
 	* Use Docker
 
 ## Solution
-(TODO: write how to setup project)
 
+Technologies:
+* PHP 7.4
+* Symfony 5.1
+* Nginx+php-fpm
+* MySQL 5.7
+* Docker (docker-compose)
 
+### Project setup
+
+1. Copy .env.dist to .env to setup docker variables
+
+		HOST_USER=1000:1000
+		MYSQL_DATABASE=clicklogic_test_task
+		MYSQL_ROOT_PASSWORD=password
+		MYSQL_PASSWORD=password
+		MYSQL_USER=root
+		COMPOSER_AUTH='{"github-oauth":{"github.com":"<personal access token>"}}'
+		
