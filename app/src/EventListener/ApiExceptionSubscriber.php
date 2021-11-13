@@ -12,7 +12,7 @@ use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Throwable;
 
-class ApiExceptionSubscriber // implements EventSubscriberInterface
+class ApiExceptionSubscriber implements EventSubscriberInterface
 {
     private $isDebug;
 
