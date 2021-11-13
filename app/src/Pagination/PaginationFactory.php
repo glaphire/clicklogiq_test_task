@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Pagination;
 
 use Doctrine\ORM\QueryBuilder;
@@ -15,17 +17,33 @@ class PaginationFactory
 {
     private RouterInterface $router;
 
+    private const DEFAULT_PAGE = 1;
+
+    private const LINK_FIRST = 'first';
+    private const LINK_LAST = 'last';
+    private const LINK_NEXT = 'next';
+    private const LINK_PREV = 'prev';
+    private const LINK_SELF = 'self';
+
+
+    private const MAX_PER_PAGE = 10;
+
     public function __construct(RouterInterface $router)
     {
         $this->router = $router;
     }
 
-    public function createCollection(QueryBuilder $qb, Request $request, $route, array $routeParams = [])
+    public function createCollection(
+        QueryBuilder $qb,
+        Request $request,
+        string $route,
+        array $routeParams = []
+    ): PaginatedCollection
     {
-        $page = $request->query->get('page', 1);
+        $page = $request->query->get('page', self::DEFAULT_PAGE);
         $adapter = new QueryAdapter($qb);
         $pagerfanta = new Pagerfanta($adapter);
-        $pagerfanta->setMaxPerPage(10);
+        $pagerfanta->setMaxPerPage(self::MAX_PER_PAGE);
         $pagerfanta->setCurrentPage($page);
         $nearEarthObjects = [];
 
@@ -42,16 +60,16 @@ class PaginationFactory
             ));
         };
 
-        $paginatedCollection->addLink('self', $createLinkUrl($page));
-        $paginatedCollection->addLink('first', $createLinkUrl(1));
-        $paginatedCollection->addLink('last', $createLinkUrl($pagerfanta->getNbPages()));
+        $paginatedCollection->addLink(self::LINK_SELF, $createLinkUrl($page));
+        $paginatedCollection->addLink(self::LINK_FIRST, $createLinkUrl(self::DEFAULT_PAGE));
+        $paginatedCollection->addLink(self::LINK_LAST, $createLinkUrl($pagerfanta->getNbPages()));
 
         if ($pagerfanta->hasNextPage()) {
-            $paginatedCollection->addLink('next', $createLinkUrl($pagerfanta->getNextPage()));
+            $paginatedCollection->addLink(self::LINK_NEXT, $createLinkUrl($pagerfanta->getNextPage()));
         }
 
         if ($pagerfanta->hasPreviousPage()) {
-            $paginatedCollection->addLink('prev', $createLinkUrl($pagerfanta->getPreviousPage()));
+            $paginatedCollection->addLink(self::LINK_PREV, $createLinkUrl($pagerfanta->getPreviousPage()));
         }
 
         return $paginatedCollection;
