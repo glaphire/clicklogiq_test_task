@@ -13,11 +13,11 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class NearEarthObjectController extends AbstractController
 {
+    private const RESPONSE_DATETIME_FORMAT = 'Y-m-d';
+
     private EntityManagerInterface $entityManager;
-    /**
-     * @var PaginationFactory
-     */
-    private $paginationFactory;
+
+    private PaginationFactory $paginationFactory;
 
     public function __construct(EntityManagerInterface $entityManager, PaginationFactory $paginationFactory)
     {
@@ -28,7 +28,7 @@ class NearEarthObjectController extends AbstractController
     /**
      * @Route("/neo/hazardous", name="neo_hazardous", methods={"GET"})
      */
-    public function hazardousAction(Request $request)
+    public function hazardousAction(Request $request): Response
     {
         /**
          * @var NearEarthObjectRepository $nearEarthObjectRepository
@@ -45,13 +45,13 @@ class NearEarthObjectController extends AbstractController
             ->paginationFactory
             ->createCollection($queryBuilder, $request, 'neo_hazardous');
 
-        return $this->json($paginatedCollection, 200, [], ['datetime_format' => 'Y-m-d']);
+        return $this->prepareResponse($paginatedCollection);
     }
 
     /**
      * @Route("/neo/fastest", name="neo_fastest", methods={"GET"})
      */
-    public function getFastestNearEarthObject(Request $request, bool $isHazardous)
+    public function getFastestNearEarthObject(bool $isHazardous): Response
     {
         /**
          * @var NearEarthObjectRepository $nearEarthObjectRepository
@@ -63,13 +63,13 @@ class NearEarthObjectController extends AbstractController
         $fastestNearEarthObject = $nearEarthObjectRepository
             ->getFastestNearEarthObject($isHazardous);
 
-        return $this->json($fastestNearEarthObject, 200, [], ['datetime_format' => 'Y-m-d']);
+        return $this->prepareResponse($fastestNearEarthObject);
     }
 
     /**
      * @Route("/neo/best-month", name="neo_best_month", methods={"GET"})
      */
-    public function getMonthWithMostNearEarthObjects(Request $request, bool $isHazardous)
+    public function getMonthWithMostNearEarthObjects(bool $isHazardous): Response
     {
         /**
          * @var NearEarthObjectRepository $nearEarthObjectRepository
@@ -80,11 +80,17 @@ class NearEarthObjectController extends AbstractController
 
         $monthName = $nearEarthObjectRepository->getMonthWithMostNearEarthObjects($isHazardous);
 
-        return $this->json(
-            ['best_month' => $monthName],
-            Response::HTTP_OK,
-            [],
-            ['datetime_format' => 'Y-m-d']
-        );
+        return $this->prepareResponse(['best_month' => $monthName]);
+    }
+
+    /**
+     * @param mixed $data
+     */
+    private function prepareResponse($data, int $status = Response::HTTP_OK, $headers = [], $context = []): Response
+    {
+        $datetimeFormat = ['datetime_format' => self::RESPONSE_DATETIME_FORMAT];
+        $resultContext = array_merge($datetimeFormat, $context);
+
+        return $this->json($data, $status, $headers, $resultContext);
     }
 }
