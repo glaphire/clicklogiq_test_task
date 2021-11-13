@@ -4,39 +4,52 @@ namespace App\Console;
 
 use App\Module\NasaApiParser\Exception\NasaApiException;
 use App\Module\NasaApiParser\ParserService;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-//TODO: add LoggerAwareInterface and logging
-class NasaApiNearEarthObjectParser extends Command
+class NasaApiNearEarthObjectParser extends Command implements LoggerAwareInterface
 {
     protected static $defaultName = 'nasa-api:parse-near-earth-objects';
 
     private ParserService $parserService;
 
-    public function __construct(ParserService $parserService)
+    private LoggerInterface $logger;
+
+    public function __construct(ParserService $parserService, LoggerInterface $logger)
     {
         parent::__construct($name = null);
+
         $this->parserService = $parserService;
+        $this->logger = $logger;
     }
 
-    protected function configure()
+
+    public function setLogger(LoggerInterface $logger): void
     {
-        $description = 'Retrieves list of NEO over the past three days'
-            .' from NASA API and saves to db.';
-        $this
-            ->setDescription($description);
+        $this->logger = $logger;
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function configure(): void
+    {
+        $description = 'Retrieves list of Near Earth Objects over the past three days'
+            .' from NASA API and saves to Database.';
+
+        $this->setDescription($description);
+    }
+
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $output->writeln('Getting Near Earth Objects from NASA API');
 
         try {
             $this->parserService->processNearEarthObjectList();
         } catch (NasaApiException $e) {
-            $output->writeln("<error>" . $e->getMessage() . "</error>");
+            $output->writeln("<error>{$e->getMessage()}</error>");
+            $this->logger->log(LogLevel::ERROR, $e->getMessage());
 
             return Command::FAILURE;
         }
