@@ -9,7 +9,7 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 class IsHazardousResolver implements ArgumentValueResolverInterface
 {
-    public function supports(Request $request, ArgumentMetadata $argument)
+    public function supports(Request $request, ArgumentMetadata $argument): bool
     {
         if (is_null($argument->getType()) || is_string($argument->getType())) {
             return true;
@@ -18,7 +18,7 @@ class IsHazardousResolver implements ArgumentValueResolverInterface
         return false;
     }
 
-    public function resolve(Request $request, ArgumentMetadata $argument)
+    public function resolve(Request $request, ArgumentMetadata $argument): iterable
     {
         $isHazardous = $request->get('hazardous');
 
@@ -27,7 +27,8 @@ class IsHazardousResolver implements ArgumentValueResolverInterface
         } elseif ($isHazardous === 'false' || empty($isHazardous)) {
             yield false;
         } else {
-            throw new BadRequestHttpException("Parameter 'hazardous' should be absent, 'true' or 'false'");
+            $errorMessage = "Parameter 'hazardous' be equal 'true' or 'false' or be completely absent";
+            throw new BadRequestHttpException($errorMessage);
         }
     }
 }
