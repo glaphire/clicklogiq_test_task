@@ -27,7 +27,7 @@ class IsHazardousResolver implements ArgumentValueResolverInterface
         } elseif ($isHazardous === 'false' || empty($isHazardous)) {
             yield false;
         } else {
-            $errorMessage = "Parameter 'hazardous' be equal 'true' or 'false' or be completely absent";
+            $errorMessage = "Parameter 'hazardous' should be equal 'true' or 'false' or be completely absent";
             throw new BadRequestHttpException($errorMessage);
         }
     }
