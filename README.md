@@ -63,6 +63,11 @@ Technologies:
 * MySQL 5.7
 * Docker (docker-compose)
 
+### Notice
+
+1. Project setup in Docker will be refactored
+2. Functional tests are not yet implemented
+
 ### Project setup
 
 1. Copy .env.dist to .env to setup docker variables
@@ -74,3 +79,20 @@ Technologies:
 		MYSQL_USER=root
 		COMPOSER_AUTH='{"github-oauth":{"github.com":"<personal access token>"}}'
 		
+2. Copy app.env.dist to app/.env.local to setup application variables and set proper variables
+3. Run 
+		
+		docker-compose build
+		docker-compose up -d
+		
+4. Go inside php-fpm container and install composer dependencies
+		
+		docker-compose exec php-fpm bash
+		composer install
+	
+5. Inside php-fpm container run
+		
+		php bin/console nasa-api:parse-near-earth-objects
+
+6. Download Postman collection and environment (in the postman folder),
+set NASA API key in environment variables and check endpoints.
