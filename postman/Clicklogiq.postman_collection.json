@@ -1,0 +1,117 @@
+{
+	"info": {
+		"_postman_id": "f5d67700-ce57-43cb-8a43-2eb6cc12ed21",
+		"name": "Clicklogiq",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "{{localhost}}/neo/hazardous",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{localhost}}/neo/hazardous?page=1&XDEBUG_SESSION=XDEBUG_ECLIPSE",
+					"host": [
+						"{{localhost}}"
+					],
+					"path": [
+						"neo",
+						"hazardous"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "XDEBUG_SESSION",
+							"value": "XDEBUG_ECLIPSE"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "{{host}}/neo/rest/v1/feed?start_date=2020-08-06&end_date=2020-08-08&detailed=false&api_key={{api_key}}",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/neo/rest/v1/feed?start_date=2020-08-06&end_date=2020-08-08&detailed=false&api_key={{api_key}}",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"neo",
+						"rest",
+						"v1",
+						"feed"
+					],
+					"query": [
+						{
+							"key": "start_date",
+							"value": "2020-08-06"
+						},
+						{
+							"key": "end_date",
+							"value": "2020-08-08"
+						},
+						{
+							"key": "detailed",
+							"value": "false"
+						},
+						{
+							"key": "api_key",
+							"value": "{{api_key}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "{{localhost}}/neo/best-month",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{localhost}}/neo/best-month",
+					"host": [
+						"{{localhost}}"
+					],
+					"path": [
+						"neo",
+						"best-month"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "{{localhost}}/neo/fastest?hazardous=true&XDEBUG_SESSION=XDEBUG_ECLIPSE",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{localhost}}/neo/fastest?hazardous=false",
+					"host": [
+						"{{localhost}}"
+					],
+					"path": [
+						"neo",
+						"fastest"
+					],
+					"query": [
+						{
+							"key": "hazardous",
+							"value": "false"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
