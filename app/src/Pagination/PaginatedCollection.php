@@ -8,13 +8,16 @@ use App\Entity\EntityInterface;
 
 class PaginatedCollection
 {
+    /**
+     * @var EntityInterface[]
+     */
     private $items;
 
-    private $total;
+    private int $total;
 
-    private $count;
+    private int $count;
 
-    private $links = [];
+    private array $links = [];
 
     /**
      * @param EntityInterface[] $items
