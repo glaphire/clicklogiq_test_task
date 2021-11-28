@@ -20,6 +20,7 @@ class NearEarthObjectRepository extends ServiceEntityRepository
         parent::__construct($registry, NearEarthObject::class);
     }
 
+    //TODO: refactor to "findOneByReference"
     public function findOneReference($value): ?NearEarthObject
     {
         return $this->createQueryBuilder('neo')

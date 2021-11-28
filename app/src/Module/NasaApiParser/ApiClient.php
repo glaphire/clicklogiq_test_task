@@ -44,6 +44,7 @@ class ApiClient
     {
         $response = $this->httpClient->request($method, $relUrl, $options);
 
+        //TODO: improve exception handling for 4xx and 5xx errors
         if ($response->getStatusCode() !== Response::HTTP_OK) {
             throw new NasaApiException(
                 sprintf(

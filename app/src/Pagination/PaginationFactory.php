@@ -47,6 +47,7 @@ class PaginationFactory
         $pagerfanta->setCurrentPage($page);
         $nearEarthObjects = [];
 
+        //TODO: create method toArray or convert via (array)
         foreach ($pagerfanta->getCurrentPageResults() as $result) {
             $nearEarthObjects[] = $result;
         }
