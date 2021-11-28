@@ -49,6 +49,7 @@ class NasaApiNearEarthObjectParser extends Command implements LoggerAwareInterfa
             $this->parserService->processNearEarthObjectList();
         } catch (NasaApiException $e) {
             $output->writeln("<error>{$e->getMessage()}</error>");
+            //TODO: refactor to use "error" method
             $this->logger->log(LogLevel::ERROR, $e->getMessage());
 
             return Command::FAILURE;

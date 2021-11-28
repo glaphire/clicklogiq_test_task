@@ -79,6 +79,7 @@ class ParserService
     private function saveNearEarthObject(NearEarthObjectDTO $dto): bool
     {
         $nearEarthObject = new NearEarthObject();
+        //TODO: extract this and move into NearEarthObjectDTO::createFromDTO
         $nearEarthObject
             ->setDate($dto->date)
             ->setReference($dto->reference)
@@ -87,6 +88,7 @@ class ParserService
             ->setIsHazardous($dto->isHazardous)
         ;
 
+        //TODO: refactor this to avoid resetting EM
         try {
             $this->entityManager->persist($nearEarthObject);
             $this->entityManager->flush();

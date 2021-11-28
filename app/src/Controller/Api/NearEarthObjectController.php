@@ -17,7 +17,7 @@ class NearEarthObjectController extends AbstractController
 {
     private const RESPONSE_DATETIME_FORMAT = 'Y-m-d';
 
-    private EntityManagerInterface $entityManager;
+    private EntityManagerInterface $entityManager; //TODO: remove EM, inject NEO repository
 
     private PaginationFactory $paginationFactory;
 
