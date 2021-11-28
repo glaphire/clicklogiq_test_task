@@ -53,6 +53,7 @@ class ParserService
             $this->cache->save($responseContent);
         }
 
+        //TODO: move this on the 'no cache' step
         $this->parseNearEarthObjectListResponse($responseContent->get());
 
         return $responseContent;
@@ -60,6 +61,7 @@ class ParserService
 
     private function parseNearEarthObjectListResponse(string $responseContent)
     {
+        //TODO: add handling failed json decoding
         $decodedContent = json_decode($responseContent, true);
 
         $nearEarthObjects = $decodedContent['near_earth_objects'];
@@ -68,6 +70,7 @@ class ParserService
             foreach ($groupedObjectsByDate as $index => $singleObject) {
                 $dto = $this->createNearEarthObjectDtoFromRawData($date, $singleObject);
 
+                //TODO: add exception handling
                 if ($this->isNearEarthObjectValid($dto)) {
                     $this->saveNearEarthObject($dto);
                 }
@@ -125,6 +128,7 @@ class ParserService
 
     private function createNearEarthObjectDtoFromRawData(string $date, array $rawData): NearEarthObjectDTO
     {
+        //TODO: check keys in $rawData
         $dto = new NearEarthObjectDTO(
             DateTimeImmutable::createFromFormat('Y-m-d', $date),
             $rawData['neo_reference_id'],
