@@ -4,14 +4,9 @@ declare(strict_types=1);
 
 namespace App\Pagination;
 
-use App\Entity\EntityInterface;
-
 class PaginatedCollection
 {
-    /**
-     * @var EntityInterface[]
-     */
-    private $items;
+    private iterable $items;
 
     private int $total;
 
@@ -20,10 +15,10 @@ class PaginatedCollection
     private array $links = [];
 
     /**
-     * @param EntityInterface[] $items
+     * @param iterable
      * @param int $totalItems
      */
-    public function __construct($items, int $totalItems)
+    public function __construct(iterable $items, int $totalItems)
     {
         $this->items = $items;
         $this->total = $totalItems;
@@ -35,10 +30,7 @@ class PaginatedCollection
         $this->links[$ref] = $url;
     }
 
-    /**
-     * @return EntityInterface[]
-     */
-    public function getItems()
+    public function getItems(): iterable
     {
         return $this->items;
     }

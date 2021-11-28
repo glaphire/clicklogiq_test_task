@@ -25,6 +25,7 @@ class PaginationFactory
     private const LINK_PREV = 'prev';
     private const LINK_SELF = 'self';
 
+    private const QUERY_PARAM_PAGE = 'page';
 
     private const MAX_PER_PAGE = 10;
 
@@ -40,19 +41,16 @@ class PaginationFactory
         array $routeParams = []
     ): PaginatedCollection
     {
-        $page = $request->query->get('page', self::DEFAULT_PAGE);
+        $page = $request->query->get(self::QUERY_PARAM_PAGE, self::DEFAULT_PAGE);
         $adapter = new QueryAdapter($qb);
         $pagerfanta = new Pagerfanta($adapter);
         $pagerfanta->setMaxPerPage(self::MAX_PER_PAGE);
         $pagerfanta->setCurrentPage($page);
-        $nearEarthObjects = [];
 
-        //TODO: create method toArray or convert via (array)
-        foreach ($pagerfanta->getCurrentPageResults() as $result) {
-            $nearEarthObjects[] = $result;
-        }
-
-        $paginatedCollection = new PaginatedCollection($nearEarthObjects, $pagerfanta->getNbResults());
+        $paginatedCollection = new PaginatedCollection(
+            $pagerfanta->getCurrentPageResults(),
+            $pagerfanta->getNbResults()
+        );
 
         $createLinkUrl = function ($targetPage) use ($route, $routeParams) {
             return $this->router->generate($route, array_merge(

@@ -12,7 +12,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ORM\Entity(repositoryClass=NearEarthObjectRepository::class)
  * @UniqueEntity(fields={"reference"})
  */
-class NearEarthObject implements EntityInterface
+class NearEarthObject
 {
     /**
      * @ORM\Id()
