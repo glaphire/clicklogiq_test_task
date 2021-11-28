@@ -7,12 +7,19 @@ use Symfony\Component\HttpKernel\Controller\ArgumentValueResolverInterface;
 use Symfony\Component\HttpKernel\ControllerMetadata\ArgumentMetadata;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
-//TODO: supports only methods that really use "hazardous" param
 class IsHazardousResolver implements ArgumentValueResolverInterface
 {
+    private const ALLOWED_ROUTES = [
+        'neo_fastest',
+        'neo_best_month',
+    ];
+
     public function supports(Request $request, ArgumentMetadata $argument): bool
     {
-        if (is_null($argument->getType()) || is_string($argument->getType())) {
+        $isAllowedType = is_null($argument->getType()) || is_string($argument->getType());
+        $isAllowedRoute = in_array($request->attributes->get('_route'), self::ALLOWED_ROUTES) === true;
+
+        if ($isAllowedType && $isAllowedRoute) {
             return true;
         }
 
