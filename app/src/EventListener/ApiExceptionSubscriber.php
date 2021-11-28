@@ -64,6 +64,7 @@ class ApiExceptionSubscriber implements EventSubscriberInterface
         ];
     }
 
+    //TODO: try to simplify this later
     private function log(Throwable $exception): void
     {
         $log = [
