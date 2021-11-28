@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\DTO\NearEarthObjectDTO;
 use App\Repository\NearEarthObjectRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
@@ -114,5 +115,19 @@ class NearEarthObject
         $this->is_hazardous = $is_hazardous;
 
         return $this;
+    }
+
+    public static function createFromDTO(NearEarthObjectDTO $dto): NearEarthObject
+    {
+        $nearEarthObject = new NearEarthObject();
+
+        $nearEarthObject
+            ->setDate($dto->date)
+            ->setReference($dto->reference)
+            ->setName($dto->name)
+            ->setSpeed($dto->speed)
+            ->setIsHazardous($dto->isHazardous);
+
+        return $nearEarthObject;
     }
 }

@@ -78,20 +78,11 @@ class ParserService
         }
     }
 
-    //TODO: refactor to use Serializer component (if it's possible)
     private function saveNearEarthObject(NearEarthObjectDTO $dto): bool
     {
-        $nearEarthObject = new NearEarthObject();
-        //TODO: extract this and move into NearEarthObjectDTO::createFromDTO
-        $nearEarthObject
-            ->setDate($dto->date)
-            ->setReference($dto->reference)
-            ->setName($dto->name)
-            ->setSpeed($dto->speed)
-            ->setIsHazardous($dto->isHazardous)
-        ;
+        $nearEarthObject = NearEarthObject::createFromDTO($dto);
 
-        //TODO: refactor this to avoid resetting EM
+        //TODO: refactor this to avoid resetting and reopening EM
         try {
             $this->entityManager->persist($nearEarthObject);
             $this->entityManager->flush();
