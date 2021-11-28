@@ -17,14 +17,16 @@ class NearEarthObjectController extends AbstractController
 {
     private const RESPONSE_DATETIME_FORMAT = 'Y-m-d';
 
-    private EntityManagerInterface $entityManager; //TODO: remove EM, inject NEO repository
-
     private PaginationFactory $paginationFactory;
 
-    public function __construct(EntityManagerInterface $entityManager, PaginationFactory $paginationFactory)
-    {
-        $this->entityManager = $entityManager;
+    private NearEarthObjectRepository $nearEarthObjectRepository;
+
+    public function __construct(
+        NearEarthObjectRepository $nearEarthObjectRepository,
+        PaginationFactory $paginationFactory
+    ) {
         $this->paginationFactory = $paginationFactory;
+        $this->nearEarthObjectRepository = $nearEarthObjectRepository;
     }
 
     /**
@@ -32,14 +34,8 @@ class NearEarthObjectController extends AbstractController
      */
     public function hazardousAction(Request $request): Response
     {
-        /**
-         * @var NearEarthObjectRepository $nearEarthObjectRepository
-         */
-        $nearEarthObjectRepository = $this
-            ->entityManager
-            ->getRepository(NearEarthObject::class);
-
-        $queryBuilder = $nearEarthObjectRepository
+        $queryBuilder = $this
+            ->nearEarthObjectRepository
             ->createQueryBuilder('neo')
             ->addCriteria(NearEarthObjectRepository::createIsHazardousCriteria(true));
 
@@ -55,14 +51,8 @@ class NearEarthObjectController extends AbstractController
      */
     public function getFastestNearEarthObject(bool $isHazardous): Response
     {
-        /**
-         * @var NearEarthObjectRepository $nearEarthObjectRepository
-         */
-        $nearEarthObjectRepository = $this
-            ->entityManager
-            ->getRepository(NearEarthObject::class);
-
-        $fastestNearEarthObject = $nearEarthObjectRepository
+        $fastestNearEarthObject = $this
+            ->nearEarthObjectRepository
             ->getFastestNearEarthObject($isHazardous);
 
         return $this->prepareResponse($fastestNearEarthObject);
@@ -73,14 +63,9 @@ class NearEarthObjectController extends AbstractController
      */
     public function getMonthWithMostNearEarthObjects(bool $isHazardous): Response
     {
-        /**
-         * @var NearEarthObjectRepository $nearEarthObjectRepository
-         */
-        $nearEarthObjectRepository = $this
-            ->entityManager
-            ->getRepository(NearEarthObject::class);
-
-        $monthName = $nearEarthObjectRepository->getMonthWithMostNearEarthObjects($isHazardous);
+        $monthName = $this
+            ->nearEarthObjectRepository
+            ->getMonthWithMostNearEarthObjects($isHazardous);
 
         return $this->prepareResponse(['best_month' => $monthName]);
     }
