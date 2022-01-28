@@ -1,0 +1,7 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Property App\\\\EventListener\\\\ApiExceptionSubscriber\\:\\:\\$isDebug is never read, only written\\.$#"
+			count: 1
+			path: src/EventListener/ApiExceptionSubscriber.php
+
