@@ -6,3 +6,5 @@ parameters:
 		- src
 	doctrine:
 		objectManagerLoader: tests/object-manager.php
+	checkMissingIterableValueType: false
+	checkGenericClassInNonGenericObjectType: false

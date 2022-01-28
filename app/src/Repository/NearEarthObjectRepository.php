@@ -20,6 +20,9 @@ class NearEarthObjectRepository extends ServiceEntityRepository
         parent::__construct($registry, NearEarthObject::class);
     }
 
+    /**
+     * @return int|mixed|string
+     */
     public function getFastestNearEarthObject(bool $isHazardous = false)
     {
         $query = $this->createQueryBuilder('neo');
@@ -43,6 +46,9 @@ class NearEarthObjectRepository extends ServiceEntityRepository
             ->andWhere(Criteria::expr()->eq('neo.is_hazardous', $isHazardous));
     }
 
+    /**
+     * @return int
+     */
     public function getMonthWithMostNearEarthObjects(bool $isHazardous)
     {
         $query = $this->createQueryBuilder('neo');
@@ -54,6 +60,6 @@ class NearEarthObjectRepository extends ServiceEntityRepository
             ->setMaxResults(1);
         ;
 
-        return $query->getQuery()->getSingleScalarResult();
+        return (int)$query->getQuery()->getSingleScalarResult();
     }
 }

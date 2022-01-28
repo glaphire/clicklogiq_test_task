@@ -40,7 +40,7 @@ class ParserService
         $this->apiClient = $apiClient;
     }
 
-    public function processNearEarthObjectList(DateTimeImmutable $startDate = null)
+    public function processNearEarthObjectList(DateTimeImmutable $startDate = null): void
     {
         $startDate = $startDate ?? new DateTimeImmutable('-3 days');
         $responseContent = $this->cache->getItem(self::CACHE_NEO_GET_LIST_RESPONSE);
@@ -55,11 +55,9 @@ class ParserService
 
         //TODO: move this on the 'no cache' step
         $this->parseNearEarthObjectListResponse($responseContent->get());
-
-        return $responseContent;
     }
 
-    private function parseNearEarthObjectListResponse(string $responseContent)
+    private function parseNearEarthObjectListResponse(string $responseContent): void
     {
         //TODO: add handling failed json decoding
         $decodedContent = json_decode($responseContent, true);

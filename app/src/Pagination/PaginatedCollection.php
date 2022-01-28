@@ -25,7 +25,7 @@ class PaginatedCollection
         $this->count = count($items);
     }
 
-    public function addLink(string $ref, string $url)
+    public function addLink(string $ref, string $url): void
     {
         $this->links[$ref] = $url;
     }

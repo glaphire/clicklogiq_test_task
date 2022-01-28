@@ -73,7 +73,7 @@ class NearEarthObjectController extends AbstractController
     /**
      * @param mixed $data
      */
-    private function prepareResponse($data, int $status = Response::HTTP_OK, $headers = [], $context = []): Response
+    private function prepareResponse($data, int $status = Response::HTTP_OK, array $headers = [], array $context = []): Response
     {
         $datetimeFormat = ['datetime_format' => self::RESPONSE_DATETIME_FORMAT];
         $resultContext = array_merge($datetimeFormat, $context);
