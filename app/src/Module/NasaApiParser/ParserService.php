@@ -54,12 +54,15 @@ class ParserService
         }
 
         //TODO: move this on the 'no cache' step
-        $this->parseNearEarthObjectListResponse($responseContent->get());
+        /** @var string $directContent */
+        $directContent = $responseContent->get();
+        $this->parseNearEarthObjectListResponse($directContent);
     }
 
     private function parseNearEarthObjectListResponse(string $responseContent): void
     {
         //TODO: add handling failed json decoding
+        /** @var array $decodedContent */
         $decodedContent = json_decode($responseContent, true);
 
         $nearEarthObjects = $decodedContent['near_earth_objects'];

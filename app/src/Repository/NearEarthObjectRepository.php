@@ -47,7 +47,7 @@ class NearEarthObjectRepository extends ServiceEntityRepository
     }
 
     /**
-     * @return int
+     * @return mixed
      */
     public function getMonthWithMostNearEarthObjects(bool $isHazardous)
     {
@@ -60,6 +60,6 @@ class NearEarthObjectRepository extends ServiceEntityRepository
             ->setMaxResults(1);
         ;
 
-        return (int)$query->getQuery()->getSingleScalarResult();
+        return $query->getQuery()->getSingleScalarResult();
     }
 }
