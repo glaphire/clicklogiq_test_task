@@ -15,7 +15,7 @@ class PaginatedCollection
     private array $links = [];
 
     /**
-     * @param iterable
+     * @param iterable $items
      * @param int $totalItems
      */
     public function __construct(iterable $items, int $totalItems)

@@ -42,13 +42,6 @@ class NearEarthObjectDTO
      */
     public bool $isHazardous = false;
 
-    /**
-     * @param string $date
-     * @param $reference
-     * @param $name
-     * @param $speed
-     * @param bool $isHazardous
-     */
     public function __construct(
         DateTimeImmutable $date,
         int $reference,
