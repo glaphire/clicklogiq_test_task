@@ -91,6 +91,6 @@ class ApiExceptionSubscriber implements EventSubscriberInterface
             ];
         }
 
-        $this->logger->error(json_encode($log));
+        $this->logger->error((string)json_encode($log));
     }
 }

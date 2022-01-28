@@ -5,3 +5,8 @@ parameters:
 			count: 1
 			path: src/EventListener/ApiExceptionSubscriber.php
 
+		-
+			message: "#^Parameter \\#1 \\$date of class App\\\\DTO\\\\NearEarthObjectDTO constructor expects DateTimeImmutable, DateTimeImmutable\\|false given\\.$#"
+			count: 1
+			path: src/Module/NasaApiParser/ParserService.php
+

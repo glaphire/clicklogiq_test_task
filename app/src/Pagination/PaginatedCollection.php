@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Pagination;
 
+use Countable;
+
 class PaginatedCollection
 {
-    private iterable $items;
+    private Countable $items;
 
     private int $total;
 
@@ -15,10 +17,10 @@ class PaginatedCollection
     private array $links = [];
 
     /**
-     * @param iterable $items
+     * @param Countable $items
      * @param int $totalItems
      */
-    public function __construct(iterable $items, int $totalItems)
+    public function __construct(Countable $items, int $totalItems)
     {
         $this->items = $items;
         $this->total = $totalItems;
@@ -30,7 +32,7 @@ class PaginatedCollection
         $this->links[$ref] = $url;
     }
 
-    public function getItems(): iterable
+    public function getItems(): Countable
     {
         return $this->items;
     }

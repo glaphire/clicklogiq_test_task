@@ -117,6 +117,12 @@ class ParserService
 
     private function createNearEarthObjectDtoFromRawData(string $date, array $rawData): NearEarthObjectDTO
     {
+        $currentDate = DateTimeImmutable::createFromFormat('Y-m-d', $date);
+
+        if ($currentDate === false) {
+            throw new NasaApiException("Can't set current date while creating NearEarthObject.");
+        }
+
         //TODO: check keys in $rawData
         $dto = new NearEarthObjectDTO(
             DateTimeImmutable::createFromFormat('Y-m-d', $date),
