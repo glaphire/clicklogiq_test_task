@@ -41,7 +41,7 @@ class PaginationFactory
         array $routeParams = []
     ): PaginatedCollection
     {
-        $page = $request->query->get(self::QUERY_PARAM_PAGE, self::DEFAULT_PAGE);
+        $page = (int)$request->query->get(self::QUERY_PARAM_PAGE, (string)self::DEFAULT_PAGE);
         $adapter = new QueryAdapter($qb);
         $pagerfanta = new Pagerfanta($adapter);
         $pagerfanta->setMaxPerPage(self::MAX_PER_PAGE);
