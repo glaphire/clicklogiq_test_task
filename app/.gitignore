@@ -12,3 +12,7 @@
 ###>project-specific
 composer/auth.json
 ###<project-specific
+###> symfony/phpunit-bridge ###
+.phpunit.result.cache
+/phpunit.xml
+###< symfony/phpunit-bridge ###
